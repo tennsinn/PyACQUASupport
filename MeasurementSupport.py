@@ -313,15 +313,13 @@ class VoiceMeasurementHelper():
     def set_force(self):
         if Tags.Exists('AppForce'):
             force = get_tag_values('AppForce')
-        else:
-            force = MeasurementConst.var_test_dflt_force
-        force_cur = get_var_value('current_force') if Variables.Exists('current_force') else ''
-        if force_cur != force:
-            ret = HelperFunctions.MessageBox('Set the Application Force to '+force, 'Info', 0x41)
-            if 2 == ret:
-                Smd.Cancel = True
-            else:
-                save_var('current_force', force, const.evsUserDefined)
+            force_cur = get_var_value('current_force') if Variables.Exists('current_force') else ''
+            if force_cur != force:
+                ret = HelperFunctions.MessageBox('Set the Application Force to '+force, 'Info', 0x41)
+                if 2 == ret:
+                    Smd.Cancel = True
+                else:
+                    save_var('current_force', force, const.evsUserDefined)
 
     def update_call(self):
         ret = 0
