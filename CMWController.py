@@ -65,6 +65,7 @@ class CMWController():
         return self.connected
 
     def get_delay_net(self, direction):
+        val = False
         if 'GSM' == self.network or 'WCDMA' == self.network:
             delay = self.interface.QueryCommand(f'SENSe:{self.network}:SIGN1:CVINfo?')
             delay = delay.split(',')
@@ -72,9 +73,7 @@ class CMWController():
                 val = eval(delay[2])*1000
             elif 'RCV' == direction and 'INV' != delay[1]:
                 val = eval(delay[1])*1000
-            else:
-                val = False
-        elif 'LTE' == self.network:
+        elif 'LTE' == self.network or '5GNR' == self.network or 'WLAN' == self.network:
             if 'SND' == direction:
                 delay = self.interface.QueryCommand('READ:DATA:MEAS1:ADElay:ULINK?')
             else:
@@ -82,20 +81,15 @@ class CMWController():
             delay = delay.split(',')
             if 'INV' != delay[1]:
                 val = eval(delay[1])*1000
-            else:
-                val = False
         return val
 
     def get_delay_tau(self):
-        if 'LTE' == self.network:
+        tau = False
+        if 'LTE' == self.network or '5GNR' == self.network or 'WLAN' == self.network:
             tau = self.interface.QueryCommand('READ:DATA:MEAS1:ADElay:TAULink?')
             tau = tau.split(',')
             if 'INV' != tau[1]:
                 tau = eval(tau[1])*1000
-            else:
-                tau = False
-        else:
-            tau = False
         return tau
 
     def get_registered(self):
