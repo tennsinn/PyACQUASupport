@@ -370,12 +370,11 @@ class VoiceMeasurementHelper():
     def check_audio_delay(self, err=False):
         if self.cmw.connected:
             direction = get_tag_values('Direction')
+            time.sleep(3)
             dnet_cur = self.cmw.get_delay_net(direction)
             if not dnet_cur:
-                time.sleep(3)
-                dnet_cur = self.cmw.get_delay_net(direction)
-            if not dnet_cur:
                 self.reestablish_call()
+                time.sleep(3)
                 dnet_cur = self.cmw.get_delay_net(direction)
             if dnet_cur:
                 ucbw = self.usecase+self.bandwidth[0]
@@ -383,15 +382,17 @@ class VoiceMeasurementHelper():
                     dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
                 else:
                     dnet = dnet_cur
+                # Warning if the delay changed too much
+                if err and (dnet > 800 or dnet < 0 or abs(dnet-dnet_cur) > 200):
+                    raise Exception('Audio delay change too much, please retest the overall delay!')
                 save_var(f'D_{direction}_NET_{ucbw}', dnet_cur, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
                 # Auto adjust the EQ delay based on the change of NET delay
                 if Variables.Exists(f'D_{direction}_EQ_{ucbw}'):
                     deq = get_var_value(f'D_{direction}_EQ_{ucbw}')
                     deq_cur = deq - dnet + dnet_cur
+                    if deq_cur < 0:
+                        raise Exception('Invalid audio delay value!')
                     save_var(f'D_{direction}_EQ_{ucbw}', deq_cur, const.evsMeasured, 'ms', 'Adjusted value based on the change of net delay.', Smd.Title, True)
-                # Warning if the delay changed too much
-                if err and (dnet > 800 or dnet < 0 or abs(dnet-dnet_cur) > 100):
-                    raise Exception('Audio delay change too much, please retest the overall delay!')
             else:
                 raise Exception('Fail to get audio delay, please check the connection!')
 
