@@ -370,8 +370,12 @@ class VoiceMeasurementHelper():
     def check_audio_delay(self, err=False):
         if self.cmw.connected:
             direction = get_tag_values('Direction')
-            time.sleep(3)
             dnet_cur = self.cmw.get_delay_net(direction)
+            # If fail, wait for 3s and try again
+            if not dnet_cur:
+                time.sleep(3)
+                dnet_cur = self.cmw.get_delay_net(direction)
+            # If fail, re-establisheh the call and try again
             if not dnet_cur:
                 self.reestablish_call()
                 time.sleep(3)
