@@ -13,6 +13,16 @@ from AdbPhoneControl import *
 from CMWController import *
 
 class MeasurementConst():
+    var_sys_labname = 'LabName'
+    var_sys_frontend = 'Frontend'
+    var_sys_simulator = 'Simulator'
+    var_sys_bgncon = 'BGNConnection'
+    var_sys_bgnsoft = 'BGNSoftware'
+    var_sys_maxuncer = 'max_uncertainty'
+    var_sys_dranad = 'D_RAN_AD'
+    var_sys_dranda = 'D_RAN_DA'
+    var_sys_dsrrea = 'D_SR_REA'
+    var_sys_equipdesc = 'EquipDesc'
     var_dut_remo_ctr = 'DUTRemoteControl'
     var_dut_remo_ctr_mode = 'DUTRemoteControlMode'
     var_dut_wifi_addr = 'DUTWifiAddr'
@@ -33,20 +43,10 @@ class MeasurementConst():
     var_seq_name = 'SeqName'
     var_seq_uc = 'SeqUsecase'
 
-    var_equip_list = {
-        'LabName': 'Lenovo SH Audio Lab',
-        'Frontend': 'labCORE',
-        'Simulator': 'CMW500',
-        'BGNConnection': 'USB',
-        'BGNSoftware': 'AutoEQ'
+    var_equip_dflt_list = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ'}
+    var_equip_dflt_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']
     }
-    var_equip_val = {
-        'max_uncertainty': [20, 'ms'],
-        'D_RAN_AD': [0.46, 'ms'],
-        'D_RAN_DA': [0.67, 'ms'],
-        'D_SR_REA': [1.13, 'ms']
-    }
-    var_equip_desc = 'Default environment settings for Lenovo SH Audio Lab'
+    var_equip_dflt_desc = 'Default environment settings'
 
 class VoiceMeasurementSetting():
     seq_filter_mode = {'Frame Title': 'Select sequence filter mode:',
@@ -115,7 +115,7 @@ class VoiceMeasurementSetting():
 
     @staticmethod
     def check_global_var(seq_name, seq_usecase):
-        if not Variables.Exists('LabName'):
+        if not Variables.Exists(MeasurementConst.var_sys_labname):
             VoiceMeasurementSetting.set_const_var()
         if not Variables.Exists(MeasurementConst.var_seq_name):
             VoiceMeasurementSetting.set_seq_tag(seq_name, seq_usecase)
@@ -123,10 +123,22 @@ class VoiceMeasurementSetting():
 
     @staticmethod
     def set_const_var():
-        for key, val in MeasurementConst.var_equip_list:
-            save_var(key, val, const.evsUserDefined, '', MeasurementConst.var_equip_desc, Smd.Title, False)
-        for key, val in MeasurementConst.var_equip_val:
-            save_var(key, val[0], const.evsUserDefined, val[1], MeasurementConst.var_equip_desc, Smd.Title, False)
+        if Variables.Exists(MeasurementConst.var_sys_equipdesc):
+            desc = get_var_value(MeasurementConst.var_sys_equipdesc)
+        elif Variables.Exists('System.'+MeasurementConst.var_sys_equipdesc):
+            desc = get_var_value('System.'+MeasurementConst.var_sys_equipdesc)
+        else:
+            desc = MeasurementConst.var_equip_dflt_desc
+        for key, val in MeasurementConst.var_equip_dflt_list.items():
+            if not Variables.Exists(key):
+                if Variables.Exists('System.'+key):
+                    val = get_var_value('System.'+key)
+                save_var(key, val, const.evsUserDefined, '', desc, '', False)
+        for key, val in MeasurementConst.var_equip_dflt_val.items():
+            if not Variables.Exists(key):
+                if Variables.Exists('System.'+key):
+                    val = get_var_value('System.'+key)
+                save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
 
     @staticmethod
     def set_seq_tag(seq_name, seq_usecase):
@@ -523,6 +535,7 @@ class MeasurementSupport():
     # Run after canceled measurement
     @staticmethod
     def after_canceled_measurement():
+        # Todo: Stop BGN
         if Variables.Exists('current_force'):
             delete_vars('current_force')
         if Variables.Exists('current_volume'):
