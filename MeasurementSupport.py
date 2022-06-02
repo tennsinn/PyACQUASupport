@@ -57,62 +57,43 @@ class VoiceMeasurementSetting():
                 'Values': ['HA', 'HE', 'HH', 'BT'],
                 'Orientation': 'H'}
 
-    network_tmo = {'Frame Title': 'Select network connection:',
-                'VarName': MeasurementConst.var_call_net,
-                'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71', '5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz'],
-                'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', '5GNR', 'WLAN'],
-                'Orientation': 'H'}
-
     network = {'Frame Title': 'Select network connection:',
                 'VarName': MeasurementConst.var_call_net,
                 'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN'],
                 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN'],
                 'Orientation': 'H'}
-
-    network_all = {'Frame Title': 'Select network connection:',
-                'VarName': MeasurementConst.var_call_net,
-                'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'],
-                'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP'],
-                'Orientation': 'H'}
+    network_tmo = network.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
+    network_all = network.update({'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'], 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP']})
 
     vocoder = {'Frame Title': 'Select vocoder:',
                 'VarName': MeasurementConst.var_call_vc,
                 'Options': ['AMR', 'EVS'],
                 'Values': ['AMR', 'EVS'],
                 'Orientation': 'H',
-                'GrayOutSingleRadioButton': {'EVS': {'CallNetwork': ['GSM', 'WCDMA']}}}
+                'GrayOutSingleRadioButton': {'EVS': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}},
+                'GrayOut': {MeasurementConst.var_call_net: ['VoIP']}}
 
     bandwidth = {'Frame Title': 'Select bandwidth:',
                 'VarName': MeasurementConst.var_call_bw,
-                'Options': ['NB', 'WB', 'SWB'],
-                'Values': ['NB', 'WB', 'SWB'],
+                'Options': ['NB', 'WB', 'SWB', 'FB'],
+                'Values': ['NB', 'WB', 'SWB', 'FB'],
                 'Orientation': 'H',
-                'GrayOutSingleRadioButton': {'SWB': {'CallVocoder': ['AMR']}}}
+                'GrayOutSingleRadioButton': {'NB': {MeasurementConst.var_call_net: ['VoIP']}, 'SWB': {MeasurementConst.var_call_vc: ['AMR']}, 'FB': {MeasurementConst.var_call_vc: ['AMR'], MeasurementConst.var_call_net: ['VoIP']}}}
 
-    mic_nc_ha = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
-                'VarName': MeasurementConst.var_dut_mic_nc+'_HA',
+    mic_nc = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
+                'VarName': MeasurementConst.var_dut_mic_nc,
                 'Options': ['Two or More', 'Single'],
                 'Values': ['2', '1'],
                 'Orientation': 'H'}
-
-    mic_nc_he = {'Frame Title': 'Select microphone number for noise cancellation in headset mode:',
-                'VarName': MeasurementConst.var_dut_mic_nc+'_HE',
-                'Options': ['Two or More', 'Single'],
-                'Values': ['2', '1'],
-                'Orientation': 'H'}
-
-    hs_type = {'Frame Title': 'Select headset type:',
-                'VarName': MeasurementConst.var_hs_type,
-                'Options': ['3.5mm Binaural', 'USB Binaural', 'BT Binaural', '3.5mm Monaural', 'USB Monaural', 'BT Monaural'],
-                'Values': ['35Bin', 'USBBin', 'BTBin', '35Mono', 'USBMono', 'BTMono'],
-                'Orientation': 'H',
-                'GrayOut': {MeasurementConst.var_dut_uc: ['HA', 'HH']}}
+    mic_nc_ha = mic_nc.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HA'})
+    mic_nc_he = mic_nc.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HE'})
 
     hs_type_nouc = {'Frame Title': 'Select headset type:',
                 'VarName': MeasurementConst.var_hs_type,
-                'Options': ['3.5mm Binaural', 'USB Binaural', 'BT Binaural', '3.5mm Monaural', 'USB Monaural', 'BT Monaural'],
-                'Values': ['35Bin', 'USBBin', 'BTBin', '35Mono', 'USBMono', 'BTMono'],
+                'Options': ['Analog Binaural', 'Digital Binaural', 'Bluetooth Binaural', 'Analog Monaural', 'Digital Monaural', 'Bluetooth Monaural'],
+                'Values': ['AnaBin', 'DigiBin', 'BTBin', 'AnaMono', 'DigiMono', 'BTMono'],
                 'Orientation': 'H'}
+    hs_type = hs_type_nouc.update({'GrayOut': {MeasurementConst.var_dut_uc: ['HA', 'HH']}})
 
     @staticmethod
     def check_global_var(seq_name, seq_usecase):
