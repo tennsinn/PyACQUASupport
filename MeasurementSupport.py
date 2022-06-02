@@ -180,7 +180,7 @@ class VoiceMeasurementHelper():
         scenario = {'HA':'earpiece', 'HE':'headset', 'HH':'speaker', 'BT':'bt_a2dp'}
         if Variables.Exists(MeasurementConst.var_hs_type):
             hstype = get_var_value(MeasurementConst.var_hs_type)
-            if hstype.startswith('USB'):
+            if hstype.startswith('Digi'):
                 scenario['HE'] = 'usb_headset'
             elif hstype.startswith('BT'):
                 scenario['HE'] = 'bt_a2dp'
