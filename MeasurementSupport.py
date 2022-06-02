@@ -26,21 +26,23 @@ class MeasurementConst():
     var_call_vc = 'CallVocoder'
     var_call_bw = 'CallBandwidth'
     var_test_dflt_force = 'TestDefaultAppForce'
+    var_seq_name = 'SeqName'
+    var_seq_uc = 'SeqUsecase'
 
-    @staticmethod
-    def set_const_var():
-        state = const.evsUserDefined
-        unit = ''
-        desc = 'Default environment settings for Lenovo SH Audio Lab'
-        comm = Smd.Title
-        save_var('Frontend', 'labCORE', state, unit, desc, comm, False)
-        save_var('Simulator', 'CMW500', state, unit, desc, comm, False)
-        save_var('BGNConnection', 'USB', state, unit, desc, comm, False)
-        save_var('BGNSoftware', 'AutoEQ', state, unit, desc, comm, False)
-        save_var('max_uncertainty', 20, state, 'ms', desc, comm, False)
-        save_var('D_RAN_AD', 0.46, state, 'ms', desc, comm, False)
-        save_var('D_RAN_DA', 0.67, state, 'ms', desc, comm, False)
-        save_var('D_SR_REA', 1.13, state, 'ms', desc, comm, False)
+    var_equip_list = {
+        'LabName': 'Lenovo SH Audio Lab',
+        'Frontend': 'labCORE',
+        'Simulator': 'CMW500',
+        'BGNConnection': 'USB',
+        'BGNSoftware': 'AutoEQ'
+    }
+    var_equip_val = {
+        'max_uncertainty': [20, 'ms'],
+        'D_RAN_AD': [0.46, 'ms'],
+        'D_RAN_DA': [0.67, 'ms'],
+        'D_SR_REA': [1.13, 'ms']
+    }
+    var_equip_desc = 'Default environment settings for Lenovo SH Audio Lab'
 
 class VoiceMeasurementSetting():
     phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
@@ -113,21 +115,43 @@ class VoiceMeasurementSetting():
                 'Orientation': 'H'}
 
     @staticmethod
-    def set_seq_tag(tag):
-        save_var('SeqTag', tag, const.evsUserDefined, '', '', Smd.Title, False)
+    def check_global_var(seq_name, seq_usecase):
+        if not Variables.Exists('LabName'):
+            VoiceMeasurementSetting.set_const_var()
+        if not Variables.Exists(MeasurementConst.var_seq_name):
+            VoiceMeasurementSetting.set_seq_tag(seq_name, seq_usecase)
+            VoiceMeasurementSetting.set_global_config()
+
+    @staticmethod
+    def set_const_var():
+        for key, val in MeasurementConst.var_equip_list:
+            save_var(key, val, const.evsUserDefined, '', MeasurementConst.var_equip_desc, Smd.Title, False)
+        for key, val in MeasurementConst.var_equip_val:
+            save_var(key, val[0], const.evsUserDefined, val[1], MeasurementConst.var_equip_desc, Smd.Title, False)
+
+    @staticmethod
+    def set_seq_tag(seq_name, seq_usecase):
+        save_var(MeasurementConst.var_seq_name, seq_name, const.evsUserDefined, '', '', Smd.Title, False)
+        save_var(MeasurementConst.var_seq_uc, seq_usecase, const.evsUserDefined, '', '', Smd.Title, False)
 
     @staticmethod
     def set_global_config():
-        if Variables.Exists('SeqTag'):
-            seq_tag = get_var_value('SeqTag')
-        else:
-            seq_tag = False
-        if 'TMO' == seq_tag:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_ha, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type_nouc)
-        elif 'BigRule' == seq_tag:
+        seq_name = get_var_value(MeasurementConst.var_seq_name)
+        seq_uc = get_var_value(MeasurementConst.var_seq_uc)
+        if 'TMO' == seq_name:
+            if 'HE' == seq_uc:
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type_nouc)
+            elif 'HA' == seq_uc:
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_ha)
+            else:
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder)
+        elif 'BigRule' == seq_name:
             run_universal_questionnaire_gui(VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.hs_type_nouc)
         else:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.usecase, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder)
+            if 'HE' == seq_uc:
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth, VoiceMeasurementSetting.hs_type_nouc)
+            else:
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth)
 
 class VoiceMeasurementHelper():
     def __init__(self):
@@ -449,7 +473,8 @@ class VoiceMeasurementHelper():
 class MeasurementSupport():
     # Run before each measurement
     @staticmethod
-    def before_each_measurement():
+    def before_each_measurement(seq_name='', seq_uc=''):
+        VoiceMeasurementSetting.check_global_var(seq_name, seq_uc)
         vmh = VoiceMeasurementHelper()
         vmh.cmw.interface.Connect()
         set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
