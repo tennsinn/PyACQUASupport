@@ -25,7 +25,7 @@ class MeasurementConst():
     var_call_net = 'CallNetwork'
     var_call_vc = 'CallVocoder'
     var_call_bw = 'CallBandwidth'
-    var_test_dflt_force = '8N'
+    var_test_dflt_force = 'TestDefaultAppForce'
 
     @staticmethod
     def set_const_var():
@@ -311,15 +311,19 @@ class VoiceMeasurementHelper():
             save_var('current_volume', vol, const.evsUserDefined)
 
     def set_force(self):
+        force_cur = get_var_value('current_force') if Variables.Exists('current_force') else ''
         if Tags.Exists('AppForce'):
             force = get_tag_values('AppForce')
-            force_cur = get_var_value('current_force') if Variables.Exists('current_force') else ''
-            if force_cur != force:
-                ret = HelperFunctions.MessageBox('Set the Application Force to '+force, 'Info', 0x41)
-                if 2 == ret:
-                    Smd.Cancel = True
-                else:
-                    save_var('current_force', force, const.evsUserDefined)
+        elif Tags.Exists('Direction'):
+            force = self.get_defined_var(MeasurementConst.var_test_dflt_force)
+        else:
+            force = force_cur
+        if force_cur != force:
+            ret = HelperFunctions.MessageBox('Set the Application Force to '+force, 'Info', 0x41)
+            if 2 == ret:
+                Smd.Cancel = True
+            else:
+                save_var('current_force', force, const.evsUserDefined)
 
     def update_call(self):
         ret = 0
