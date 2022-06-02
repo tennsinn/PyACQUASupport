@@ -26,6 +26,10 @@ class MeasurementConst():
     var_call_vc = 'CallVocoder'
     var_call_bw = 'CallBandwidth'
     var_test_dflt_force = 'TestDefaultAppForce'
+    var_test_swb_base = 'TestSWBBase'
+    var_test_fb_base = 'TestFBBase'
+    var_seq_filter_mode = 'SeqFilterMode'
+    var_seq_test_mode = 'SeqTestMode'
     var_seq_name = 'SeqName'
     var_seq_uc = 'SeqUsecase'
 
@@ -45,6 +49,19 @@ class MeasurementConst():
     var_equip_desc = 'Default environment settings for Lenovo SH Audio Lab'
 
 class VoiceMeasurementSetting():
+    seq_filter_mode = {'Frame Title': 'Select sequence filter mode:',
+                'VarName': MeasurementConst.var_seq_filter_mode,
+                'Options': ['Lite version', 'Mini version', 'Full version'],
+                'Values': ['lite', 'mini', 'full'],
+                'Orientation': 'H'}
+
+    # Todo: add loop mode functions
+    seq_test_mode = {'Frame Title': 'Select sequence test mode:',
+                'VarName': MeasurementConst.var_seq_test_mode,
+                'Options': ['Single mode', 'Loop mode'],
+                'Values': ['single', 'loop'],
+                'Orientation': 'H'}
+
     phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
                 'VarName': MeasurementConst.var_dut_tier,
                 'Options': ['High-Tier Smartphone', 'Mid-Tier Smartphone', 'Value Smartphone', 'Feature Phone', 'Tablet/Laptop', 'Wearable'],
@@ -75,10 +92,11 @@ class VoiceMeasurementSetting():
 
     bandwidth = {'Frame Title': 'Select bandwidth:',
                 'VarName': MeasurementConst.var_call_bw,
-                'Options': ['NB', 'WB', 'SWB', 'FB'],
-                'Values': ['NB', 'WB', 'SWB', 'FB'],
+                'Options': ['NB+WB', 'NB', 'WB', 'SWB', 'FB'],
+                'Values': ['NB+WB', 'NB', 'WB', 'SWB', 'FB'],
                 'Orientation': 'H',
-                'GrayOutSingleRadioButton': {'NB': {MeasurementConst.var_call_net: ['VoIP']}, 'SWB': {MeasurementConst.var_call_vc: ['AMR']}, 'FB': {MeasurementConst.var_call_vc: ['AMR'], MeasurementConst.var_call_net: ['VoIP']}}}
+                'GrayOutSingleRadioButton': {'NB+WB': {MeasurementConst.var_call_net: ['VoIP']}, 'NB': {MeasurementConst.var_call_net: ['VoIP']}, 'SWB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}, 'FB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}},
+                'GrayOut': {MeasurementConst.var_seq_test_mode: ['loop']}}
 
     mic_nc = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
                 'VarName': MeasurementConst.var_dut_mic_nc,
@@ -121,18 +139,18 @@ class VoiceMeasurementSetting():
         seq_uc = get_var_value(MeasurementConst.var_seq_uc)
         if 'TMO' == seq_name:
             if 'HE' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type_nouc)
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type_nouc)
             elif 'HA' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_ha)
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_ha)
             else:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder)
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder)
         elif 'BigRule' == seq_name:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.hs_type_nouc)
+            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.hs_type_nouc)
         else:
             if 'HE' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth, VoiceMeasurementSetting.hs_type_nouc)
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth,VoiceMeasurementSetting.hs_type_nouc)
             else:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth)
+                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth)
 
 class VoiceMeasurementHelper():
     def __init__(self):
@@ -187,8 +205,10 @@ class VoiceMeasurementHelper():
     def get_bandwidth():
         if Tags.Exists('Bandwidth'):
             bandwidth = get_tag_values('Bandwidth')
-        elif Variables.Exists(MeasurementConst.var_call_bw):
-            bandwidth = get_var_value(MeasurementConst.var_call_bw)
+            if Variables.Exists(MeasurementConst.var_call_bw):
+                bw = get_var_value(MeasurementConst.var_call_bw)
+                if ('SWB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_swb_base)) or ('FB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_fb_base)):
+                    bandwidth == bw
         else:
             bandwidth = None
         return bandwidth
