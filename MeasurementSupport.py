@@ -44,8 +44,7 @@ class MeasurementConst():
     var_seq_uc = 'SeqUsecase'
 
     var_equip_dflt_list = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ'}
-    var_equip_dflt_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']
-    }
+    var_equip_dflt_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
     var_equip_dflt_desc = 'Default environment settings'
 
 class VoiceMeasurementSetting():
@@ -79,8 +78,9 @@ class VoiceMeasurementSetting():
                 'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN'],
                 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN'],
                 'Orientation': 'H'}
-    network_tmo = network.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
-    network_all = network.update({'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'], 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP']})
+    network_all = network_tmo = network
+    network_tmo.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
+    network_all.update({'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'], 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP']})
 
     vocoder = {'Frame Title': 'Select vocoder:',
                 'VarName': MeasurementConst.var_call_vc,
@@ -103,15 +103,17 @@ class VoiceMeasurementSetting():
                 'Options': ['Two or More', 'Single'],
                 'Values': ['2', '1'],
                 'Orientation': 'H'}
-    mic_nc_ha = mic_nc.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HA'})
-    mic_nc_he = mic_nc.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HE'})
+    mic_nc_ha = mic_nc_he = mic_nc
+    mic_nc_ha.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HA'})
+    mic_nc_he.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HE'})
 
     hs_type_nouc = {'Frame Title': 'Select headset type:',
                 'VarName': MeasurementConst.var_hs_type,
                 'Options': ['Analog Binaural', 'Digital Binaural', 'Bluetooth Binaural', 'Analog Monaural', 'Digital Monaural', 'Bluetooth Monaural'],
                 'Values': ['AnaBin', 'DigiBin', 'BTBin', 'AnaMono', 'DigiMono', 'BTMono'],
                 'Orientation': 'H'}
-    hs_type = hs_type_nouc.update({'GrayOut': {MeasurementConst.var_dut_uc: ['HA', 'HH']}})
+    hs_type = hs_type_nouc
+    hs_type.update({'GrayOut': {MeasurementConst.var_dut_uc: ['HA', 'HH']}})
 
     @staticmethod
     def check_global_var(seq_name, seq_usecase):
