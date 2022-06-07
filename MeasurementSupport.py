@@ -7,6 +7,7 @@ from HSL.HelperTools.UniversalQuestionnaire import run_universal_questionnaire_g
 from HSL.MeasurementHandlings.Delay import set_d_script
 from HSL.MeasurementHandlings.Delay.SetEquipmentDelays import input_delay_radio_rcv, input_delay_radio_snd
 from HSL.MeasurementHandlings.BGN.BGNRemote import RemoteControlHAE, BGNConnectionError
+from HSL.MeasurementHandlings.BGN.BGNConfigurator import BGNConfigurator
 from HEAD import const
 
 from AdbPhoneControl import *
@@ -478,6 +479,12 @@ class VoiceMeasurementHelper():
             Smd.Cancel = True
 
     @staticmethod
+    def stop_LabBGN():
+        bgn_config = BGNConfigurator()
+        if bgn_config.has_controller():
+            bgn_config.stop_bgn()
+
+    @staticmethod
     def setup_bgn():
         bgns = get_tag_values('BGNScenario')
         if bgns.startswith('NG:'):
@@ -537,7 +544,6 @@ class MeasurementSupport():
     # Run after canceled measurement
     @staticmethod
     def after_canceled_measurement():
-        # Todo: Stop BGN
         if Variables.Exists('current_force'):
             delete_vars('current_force')
         if Variables.Exists('current_volume'):
@@ -546,3 +552,5 @@ class MeasurementSupport():
             delete_vars('current_bandwidth')
         if Variables.Exists('current_bitrate'):
             delete_vars('current_bitrate')
+        if Tags.Exists('BGNScenario'):
+            VoiceMeasurementHelper.stop_LabBGN()
