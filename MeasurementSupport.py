@@ -217,13 +217,13 @@ class VoiceMeasurementHelper():
         return vocoder
 
     @staticmethod
-    def get_bandwidth():
+    def get_bandwidth(base=True):
         if Tags.Exists('Bandwidth'):
             bandwidth = get_tag_values('Bandwidth')
-            if Variables.Exists(MeasurementConst.var_call_bw):
+            if base and Variables.Exists(MeasurementConst.var_call_bw):
                 bw = get_var_value(MeasurementConst.var_call_bw)
                 if ('SWB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_swb_base)) or ('FB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_fb_base)):
-                    bandwidth == bw
+                    bandwidth = bw
         else:
             bandwidth = None
         return bandwidth
@@ -408,8 +408,9 @@ class VoiceMeasurementHelper():
             else:
                 dlink = input_delay_radio_rcv()
                 ulink = input_delay_radio_snd()
-            save_var(f'D_SND_NET_{self.usecase}{self.bandwidth}_{num}', ulink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
-            save_var(f'D_RCV_NET_{self.usecase}{self.bandwidth}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
+            ucbw = self.usecase+self.get_bandwidth(False)
+            save_var(f'D_SND_NET_{ucbw}_{num}', ulink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
+            save_var(f'D_RCV_NET_{ucbw}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
 
     def check_audio_delay(self, err=False):
         if self.cmw.connected:
@@ -425,7 +426,7 @@ class VoiceMeasurementHelper():
                 time.sleep(3)
                 dnet_cur = self.cmw.get_delay_net(direction)
             if dnet_cur:
-                ucbw = self.usecase+self.bandwidth[0]
+                ucbw = self.usecase+VoiceMeasurementHelper.get_bandwidth(False)[0]
                 if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
                     dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
                 else:
@@ -447,7 +448,7 @@ class VoiceMeasurementHelper():
     @staticmethod
     def backup_delay():
         direction = get_tag_values('Direction')
-        ucbw = VoiceMeasurementHelper.get_usecase()+VoiceMeasurementHelper.get_bandwidth()[0]
+        ucbw = VoiceMeasurementHelper.get_usecase()+VoiceMeasurementHelper.get_bandwidth(False)[0]
         if Variables.Exists(f'D_{direction}_EQ_{ucbw}'):
             deq = get_var_value(f'D_{direction}_EQ_{ucbw}')
             save_var(f'D_{direction}_EQ_{ucbw}_BAK', deq, const.evsMeasured, 'ms', 'Backup data of the original tested delay value.', Smd.Title, True)
