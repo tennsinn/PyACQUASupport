@@ -49,12 +49,12 @@ class MeasurementConst():
     var_equip_dflt_desc = 'Default environment settings'
 
 class VoiceMeasurementSetting():
+    # Settings for sequence running
     seq_filter_mode = {'Frame Title': 'Select sequence filter mode:',
                 'VarName': MeasurementConst.var_seq_filter_mode,
                 'Options': ['Lite version', 'Mini version', 'Full version'],
                 'Values': ['lite', 'mini', 'full'],
                 'Orientation': 'H'}
-
     # Todo: add loop mode functions
     seq_test_mode = {'Frame Title': 'Select sequence test mode:',
                 'VarName': MeasurementConst.var_seq_test_mode,
@@ -62,27 +62,12 @@ class VoiceMeasurementSetting():
                 'Values': ['single', 'loop'],
                 'Orientation': 'H'}
 
-    phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
-                'VarName': MeasurementConst.var_dut_tier,
-                'Options': ['High-Tier Smartphone', 'Mid-Tier Smartphone', 'Value Smartphone', 'Feature Phone', 'Tablet/Laptop', 'Wearable'],
-                'Values': ['highphone', 'midphone', 'valuephone', 'featurephone', 'tablet', 'wearable'],
-                'Orientation': 'H'}
-
-    usecase = {'Frame Title': 'Select usecase:',
-                'VarName': MeasurementConst.var_dut_uc,
-                'Options': ['Handset', 'Headset', 'Handsfree', 'Bluetooth'],
-                'Values': ['HA', 'HE', 'HH', 'BT'],
-                'Orientation': 'H'}
-
+    # Common settings for sequences
     network = {'Frame Title': 'Select network connection:',
                 'VarName': MeasurementConst.var_call_net,
-                'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN'],
-                'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN'],
+                'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'],
+                'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP'],
                 'Orientation': 'H'}
-    network_all = network_tmo = network
-    network_tmo.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
-    network_all.update({'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'], 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP']})
-
     vocoder = {'Frame Title': 'Select vocoder:',
                 'VarName': MeasurementConst.var_call_vc,
                 'Options': ['AMR', 'EVS'],
@@ -90,38 +75,55 @@ class VoiceMeasurementSetting():
                 'Orientation': 'H',
                 'GrayOutSingleRadioButton': {'EVS': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}},
                 'GrayOut': {MeasurementConst.var_call_net: ['VoIP']}}
-
     bandwidth = {'Frame Title': 'Select bandwidth:',
                 'VarName': MeasurementConst.var_call_bw,
-                'Options': ['NB+WB', 'NB', 'WB', 'SWB', 'FB'],
-                'Values': ['NB+WB', 'NB', 'WB', 'SWB', 'FB'],
+                'Options': ['NB+WB', 'NB', 'WB', 'SWB', 'FB', 'Wechat(WB)', 'Teams(SWB)'],
+                'Values': ['NB+WB', 'NB', 'WB', 'SWB', 'FB', 'Wechat', 'Teams'],
                 'Orientation': 'H',
-                'GrayOutSingleRadioButton': {'NB+WB': {MeasurementConst.var_call_net: ['VoIP']}, 'NB': {MeasurementConst.var_call_net: ['VoIP']}, 'SWB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}, 'FB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}},
+                'GrayOutSingleRadioButton': {
+                    'NB+WB': {MeasurementConst.var_call_net: ['VoIP']},
+                    'NB': {MeasurementConst.var_call_net: ['VoIP']},
+                    'WB': {MeasurementConst.var_call_net: ['VoIP']},
+                    'SWB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','VoIP'],MeasurementConst.var_call_vc: ['AMR']},
+                    'FB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','VoIP'],MeasurementConst.var_call_vc: ['AMR']},
+                    'Wechat': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']},
+                    'Teams': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']}},
                 'GrayOut': {MeasurementConst.var_seq_test_mode: ['loop']}}
-
-    mic_nc = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
-                'VarName': MeasurementConst.var_dut_mic_nc,
-                'Options': ['Two or More', 'Single'],
-                'Values': ['2', '1'],
+    usecase = {'Frame Title': 'Select usecase:',
+                'VarName': MeasurementConst.var_dut_uc,
+                'Options': ['All Usecase', 'Handset', 'Headset', 'Handsfree', 'Bluetooth', 'Headset Interface'],
+                'Values': ['All', 'HA', 'HE', 'HH', 'BT', 'HI'],
                 'Orientation': 'H'}
-    mic_nc_ha = mic_nc_he = mic_nc
-    mic_nc_ha.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HA'})
-    mic_nc_he.update({'VarName': MeasurementConst.var_dut_mic_nc+'_HE'})
-
-    hs_type_nouc = {'Frame Title': 'Select headset type:',
+    hs_type = {'Frame Title': 'Select headset type:',
                 'VarName': MeasurementConst.var_hs_type,
                 'Options': ['Analog Binaural', 'Digital Binaural', 'Bluetooth Binaural', 'Analog Monaural', 'Digital Monaural', 'Bluetooth Monaural'],
                 'Values': ['AnaBin', 'DigiBin', 'BTBin', 'AnaMono', 'DigiMono', 'BTMono'],
+                'Orientation': 'H',
+                'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}}
+
+    # Specific settings for TMO
+    phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
+                'VarName': MeasurementConst.var_dut_tier,
+                'Options': ['High-Tier Smartphone', 'Mid-Tier Smartphone', 'Value Smartphone', 'Feature Phone', 'Tablet/Laptop', 'Wearable'],
+                'Values': ['highphone', 'midphone', 'valuephone', 'featurephone', 'tablet', 'wearable'],
                 'Orientation': 'H'}
-    hs_type = hs_type_nouc
-    hs_type.update({'GrayOut': {MeasurementConst.var_dut_uc: ['HA', 'HH']}})
+    network_tmo = network.copy()
+    network_tmo.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
+    mic_nc_ha = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
+                'VarName': MeasurementConst.var_dut_mic_nc+'_HA',
+                'Options': ['Two or More', 'Single'],
+                'Values': ['2', '1'],
+                'Orientation': 'H',
+                'GrayOut': {MeasurementConst.var_dut_uc: ['HE','HH','BT','HI']}}
+    mic_nc_he = mic_nc_ha.copy()
+    mic_nc_he.update({'Frame Title': 'Select microphone number for noise cancellation in headset mode:', 'VarName': MeasurementConst.var_dut_mic_nc+'_HE', 'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}})
 
     @staticmethod
-    def check_global_var(seq_name, seq_usecase):
+    def check_global_var(seq_name='Default', seq_uc='All'):
         if not Variables.Exists(MeasurementConst.var_sys_labname):
             VoiceMeasurementSetting.set_const_var()
         if not Variables.Exists(MeasurementConst.var_seq_name):
-            VoiceMeasurementSetting.set_seq_tag(seq_name, seq_usecase)
+            VoiceMeasurementSetting.set_seq_tag(seq_name, seq_uc)
             VoiceMeasurementSetting.set_global_config()
 
     @staticmethod
@@ -144,28 +146,24 @@ class VoiceMeasurementSetting():
                 save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
 
     @staticmethod
-    def set_seq_tag(seq_name, seq_usecase):
+    def set_seq_tag(seq_name, seq_uc):
         save_var(MeasurementConst.var_seq_name, seq_name, const.evsUserDefined, '', '', Smd.Title, False)
-        save_var(MeasurementConst.var_seq_uc, seq_usecase, const.evsUserDefined, '', '', Smd.Title, False)
+        save_var(MeasurementConst.var_seq_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, False)
 
     @staticmethod
     def set_global_config():
         seq_name = get_var_value(MeasurementConst.var_seq_name)
         seq_uc = get_var_value(MeasurementConst.var_seq_uc)
+        if 'All' != seq_uc and seq_uc in ['HA', 'HE', 'HH', 'BT', 'HI']:
+            usecase = VoiceMeasurementSetting.usecase
+            usecase.update({'GrayOut': {VoiceMeasurementSetting.seq_test_mode: ['single','loop']}})
+            save_var(MeasurementConst.var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
         if 'TMO' == seq_name:
-            if 'HE' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type_nouc)
-            elif 'HA' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.mic_nc_ha)
-            else:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder)
+            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, usecase, VoiceMeasurementSetting.mic_nc_ha, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type)
         elif 'BigRule' == seq_name:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.hs_type_nouc)
+            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, usecase, VoiceMeasurementSetting.hs_type)
         else:
-            if 'HE' == seq_uc:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth,VoiceMeasurementSetting.hs_type_nouc)
-            else:
-                run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network_all, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth)
+            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth,usecase, VoiceMeasurementSetting.hs_type)
 
 class VoiceMeasurementHelper():
     def __init__(self):
@@ -496,19 +494,22 @@ class VoiceMeasurementHelper():
 class MeasurementSupport():
     # Run before each measurement
     @staticmethod
-    def before_each_measurement(seq_name='', seq_uc=''):
-        VoiceMeasurementSetting.check_global_var(seq_name, seq_uc)
+    def before_each_measurement():
+        VoiceMeasurementSetting.check_global_var()
+        if 'VoIP' == get_var_value(MeasurementConst.var_call_net):
+            save_var(MeasurementConst.var_cmw_remo_ctr, False, const.evsUserDefined)
         vmh = VoiceMeasurementHelper()
-        vmh.cmw.interface.Connect()
         set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
-        # Check call alive or establish call
-        if not Smd.Cancel:
-            vmh.check_call_alive()
-        # Bandwidth and Bitrate setting
-        if not Smd.Cancel:
-            vmh.update_call()
-        if not Smd.Cancel and Tags.Exists('Direction'):
-            vmh.check_audio_delay()
+        if 'VoIP' != get_var_value(MeasurementConst.var_call_net):
+            vmh.cmw.interface.Connect()
+            # Check call alive or establish call
+            if not Smd.Cancel:
+                vmh.check_call_alive()
+            # Bandwidth and Bitrate setting
+            if not Smd.Cancel:
+                vmh.update_call()
+            if not Smd.Cancel and Tags.Exists('Direction'):
+                vmh.check_audio_delay()
         # DUT volume control
         if not Smd.Cancel and Tags.Exists('VolumeCTRL'):
             vmh.set_volume()
@@ -527,7 +528,8 @@ class MeasurementSupport():
                 ret = HelperFunctions.MessageBox('Start charging the phone.', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
-        vmh.cmw.interface.Disconnect()
+        if 'VoIP' != get_var_value(MeasurementConst.var_call_net):
+            vmh.cmw.interface.Disconnect()
 
     # Run after each measurement
     @staticmethod
