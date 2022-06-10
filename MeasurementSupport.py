@@ -131,28 +131,28 @@ class VoiceMeasurementSetting():
     def set_const_var(cls):
         if Variables.Exists(cls.var_sys_desc):
             desc = get_var_value(cls.var_sys_desc)
-        elif Variables.Exists('System.{cls.var_sys_desc}'):
-            desc = get_var_value('System.{cls.var_sys_desc}')
+        elif Variables.Exists(f'system.{cls.var_sys_desc}'):
+            desc = get_var_value(f'system.{cls.var_sys_desc}')
         else:
             desc = cls.var_dflt_sys_desc
-            save_var('System.{cls.var_sys_desc}', desc, const.evsUserDefined, '', desc, '', False)
+            save_var(f'system.{cls.var_sys_desc}', desc, const.evsUserDefined, '', desc, '', False)
         for key, val in cls.var_dflt_sys_equip.items():
             if not Variables.Exists(key):
-                if Variables.Exists('System.{key}'):
-                    val = get_var_value('System.{key}')
+                if Variables.Exists(f'system.{key}'):
+                    val = get_var_value(f'system.{key}')
                 else:
-                    save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
+                    save_var(f'system.{key}', val, const.evsUserDefined, '', desc, '', False)
                 save_var(key, val, const.evsUserDefined, '', desc, '', False)
         for key, val in cls.var_dflt_sys_val.items():
             if not Variables.Exists(key):
-                if Variables.Exists('System.{key}'):
-                    val = get_var_value('System.{key}')
+                if Variables.Exists(f'system.{key}'):
+                    val = get_var_value(f'system.{key}')
                 else:
-                    save_var('System.{key}', val[0], const.evsUserDefined, val[1], desc, '', False)
+                    save_var(f'system.{key}', val[0], const.evsUserDefined, val[1], desc, '', False)
                 save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
         for key, val in cls.var_dflt_test:
-            if not Variables.Exists('System.{key}'):
-                save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
+            if not Variables.Exists(f'system.{key}'):
+                save_var(f'system.{key}', val, const.evsUserDefined, '', desc, '', False)
 
     @classmethod
     def set_seq_tag(cls,seq_name, seq_uc):
@@ -333,8 +333,8 @@ class VoiceMeasurementHelper():
     def get_defined_var(var_name):
         if Variables.Exists(var_name):
             return get_var_value(var_name)
-        elif Variables.Exists('System.{var_name}'):
-            return get_var_value('System.{var_name}')
+        elif Variables.Exists(f'system.{var_name}'):
+            return get_var_value(f'system.{var_name}')
         else:
             return False
 
