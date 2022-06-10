@@ -130,6 +130,6 @@ dmypy.json
 
 # Imported
 HSL/
-BGNMapping.xlsx
-OnProjectOpen.py
+HEAD/
+Refs/
 AdbPhoneControl.py
