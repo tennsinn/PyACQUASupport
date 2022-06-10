@@ -23,15 +23,13 @@ class MeasurementConst():
     var_sys_dranad = 'D_RAN_AD'
     var_sys_dranda = 'D_RAN_DA'
     var_sys_dsrrea = 'D_SR_REA'
-    var_sys_equipdesc = 'EquipDesc'
+    var_sys_desc = 'EquipDesc'
     var_dut_remo_ctr = 'DUTRemoteControl'
     var_dut_remo_ctr_mode = 'DUTRemoteControlMode'
     var_dut_wifi_addr = 'DUTWifiAddr'
     var_dut_hh_pos = 'DUTHHPos'
-    var_dut_tier = 'DUTTier'
-    var_dut_mic_nc = 'DUTNCMics'
-    var_dut_uc = 'DUTUseCase'
-    var_hs_type = 'HSType'
+    var_dut_uc = 'DUTUsecase'
+    var_dut_hs_type = 'DUTHSType'
     var_cmw_remo_ctr = 'CMWRemoteControl'
     var_call_net = 'CallNetwork'
     var_call_vc = 'CallVocoder'
@@ -45,9 +43,10 @@ class MeasurementConst():
     var_seq_name = 'SeqName'
     var_seq_uc = 'SeqUsecase'
 
-    var_equip_dflt_list = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ'}
-    var_equip_dflt_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
-    var_equip_dflt_desc = 'Default environment settings'
+    var_dflt_sys_equip = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ'}
+    var_dflt_sys_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
+    var_dflt_sys_desc = 'Default environment settings'
+    var_dflt_test = {var_test_dflt_force: '8N', var_test_swb_base: 'WB', var_test_fb_base: 'WB', var_test_net_flow: 'VoLTE_AMR_NB+WB,VoLTE_EVS_NB+WB'}
 
 class VoiceMeasurementSetting():
     # Settings for sequence running
@@ -95,7 +94,7 @@ class VoiceMeasurementSetting():
                 'Values': ['All', 'HA', 'HE', 'HH', 'BT', 'HI'],
                 'Orientation': 'H'}
     hs_type = {'Frame Title': 'Select headset type:',
-                'VarName': MeasurementConst.var_hs_type,
+                'VarName': MeasurementConst.var_dut_hs_type,
                 'Options': ['Analog Binaural', 'Digital Binaural', 'Bluetooth Binaural', 'Analog Monaural', 'Digital Monaural', 'Bluetooth Monaural'],
                 'Values': ['AnaBin', 'DigiBin', 'BTBin', 'AnaMono', 'DigiMono', 'BTMono'],
                 'Orientation': 'H',
@@ -103,20 +102,20 @@ class VoiceMeasurementSetting():
 
     # Specific settings for TMO
     phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
-                'VarName': MeasurementConst.var_dut_tier,
+                'VarName': 'DUTTier',
                 'Options': ['High-Tier Smartphone', 'Mid-Tier Smartphone', 'Value Smartphone', 'Feature Phone', 'Tablet/Laptop', 'Wearable'],
                 'Values': ['highphone', 'midphone', 'valuephone', 'featurephone', 'tablet', 'wearable'],
                 'Orientation': 'H'}
     network_tmo = network.copy()
     network_tmo.update({'Options': ['GSM 1900', 'UMTS Band 2 and 4', 'LTE(VoLTE) Band 2, 4, 12, 25, 66 and 71', '5G FR1 Sub6 VoNR n2, n25, n41, n66 and n71 / 5G FR2 mmW VoNR n258, n260 and n261', 'WLAN VoWiFi (WFC 2.0) 2.4GHz and 5GHz']})
     mic_nc_ha = {'Frame Title': 'Select microphone number for noise cancellation in handset mode:',
-                'VarName': MeasurementConst.var_dut_mic_nc+'_HA',
+                'VarName': 'DUTNCMicsHA',
                 'Options': ['Two or More', 'Single'],
                 'Values': ['2', '1'],
                 'Orientation': 'H',
                 'GrayOut': {MeasurementConst.var_dut_uc: ['HE','HH','BT','HI']}}
     mic_nc_he = mic_nc_ha.copy()
-    mic_nc_he.update({'Frame Title': 'Select microphone number for noise cancellation in headset mode:', 'VarName': MeasurementConst.var_dut_mic_nc+'_HE', 'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}})
+    mic_nc_he.update({'Frame Title': 'Select microphone number for noise cancellation in headset mode:', 'VarName': 'DUTNCMicsHE', 'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}})
 
     @staticmethod
     def check_global_var(seq_name='Default', seq_uc='All'):
@@ -128,22 +127,30 @@ class VoiceMeasurementSetting():
 
     @staticmethod
     def set_const_var():
-        if Variables.Exists(MeasurementConst.var_sys_equipdesc):
-            desc = get_var_value(MeasurementConst.var_sys_equipdesc)
-        elif Variables.Exists('System.'+MeasurementConst.var_sys_equipdesc):
-            desc = get_var_value('System.'+MeasurementConst.var_sys_equipdesc)
+        if Variables.Exists(MeasurementConst.var_sys_desc):
+            desc = get_var_value(MeasurementConst.var_sys_desc)
+        elif Variables.Exists('System.{MeasurementConst.var_sys_desc}'):
+            desc = get_var_value('System.{MeasurementConst.var_sys_desc}')
         else:
-            desc = MeasurementConst.var_equip_dflt_desc
-        for key, val in MeasurementConst.var_equip_dflt_list.items():
+            desc = MeasurementConst.var_dflt_sys_desc
+            save_var('System.{MeasurementConst.var_sys_desc}', desc, const.evsUserDefined, '', desc, '', False)
+        for key, val in MeasurementConst.var_dflt_sys_equip.items():
             if not Variables.Exists(key):
-                if Variables.Exists('System.'+key):
-                    val = get_var_value('System.'+key)
+                if Variables.Exists('System.{key}'):
+                    val = get_var_value('System.{key}')
+                else:
+                    save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
                 save_var(key, val, const.evsUserDefined, '', desc, '', False)
-        for key, val in MeasurementConst.var_equip_dflt_val.items():
+        for key, val in MeasurementConst.var_dflt_sys_val.items():
             if not Variables.Exists(key):
-                if Variables.Exists('System.'+key):
-                    val = get_var_value('System.'+key)
+                if Variables.Exists('System.{key}'):
+                    val = get_var_value('System.{key}')
+                else:
+                    save_var('System.{key}', val[0], const.evsUserDefined, val[1], desc, '', False)
                 save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
+        for key, val in MeasurementConst.var_dflt_test:
+            if not Variables.Exists('System.{key}'):
+                save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
 
     @staticmethod
     def set_seq_tag(seq_name, seq_uc):
@@ -196,8 +203,8 @@ class VoiceMeasurementHelper():
     @staticmethod
     def get_scenario():
         scenario = {'HA':'earpiece', 'HE':'headset', 'HH':'speaker', 'BT':'bt_a2dp'}
-        if Variables.Exists(MeasurementConst.var_hs_type):
-            hstype = get_var_value(MeasurementConst.var_hs_type)
+        if Variables.Exists(MeasurementConst.var_dut_hs_type):
+            hstype = get_var_value(MeasurementConst.var_dut_hs_type)
             if hstype.startswith('Digi'):
                 scenario['HE'] = 'usb_headset'
             elif hstype.startswith('BT'):
@@ -324,8 +331,8 @@ class VoiceMeasurementHelper():
     def get_defined_var(var_name):
         if Variables.Exists(var_name):
             return get_var_value(var_name)
-        elif Variables.Exists('System.'+var_name):
-            return get_var_value('System.'+var_name)
+        elif Variables.Exists('System.{var_name}'):
+            return get_var_value('System.{var_name}')
         else:
             return False
 
