@@ -13,7 +13,8 @@ from HEAD import const
 from AdbPhoneControl import *
 from CMWController import *
 
-class MeasurementConst():
+class VoiceMeasurementSetting():
+    # Defination of variable names
     var_sys_labname = 'LabName'
     var_sys_frontend = 'Frontend'
     var_sys_simulator = 'Simulator'
@@ -44,63 +45,62 @@ class MeasurementConst():
     var_seq_test_mode = 'SeqTestMode'
     var_seq_name = 'SeqName'
     var_seq_uc = 'SeqUsecase'
-
+    # Default key variable values
     var_dflt_sys_equip = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ', var_sys_bgnset_audio: '3quest', var_sys_bgnset_noise: 'Default'}
     var_dflt_sys_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
     var_dflt_sys_desc = 'Default environment settings'
     var_dflt_test = {var_test_dflt_force: '8N', var_test_swb_base: 'WB', var_test_fb_base: 'WB', var_test_net_flow: 'VoLTE_AMR_NB+WB,VoLTE_EVS_NB+WB'}
 
-class VoiceMeasurementSetting():
     # Settings for sequence running
     seq_filter_mode = {'Frame Title': 'Select sequence filter mode:',
-                'VarName': MeasurementConst.var_seq_filter_mode,
+                'VarName': var_seq_filter_mode,
                 'Options': ['Lite version', 'Mini version', 'Full version'],
                 'Values': ['lite', 'mini', 'full'],
                 'Orientation': 'H'}
     seq_test_mode = {'Frame Title': 'Select sequence test mode:',
-                'VarName': MeasurementConst.var_seq_test_mode,
+                'VarName': var_seq_test_mode,
                 'Options': ['Single mode', 'Loop mode'],
                 'Values': ['single', 'loop'],
                 'Orientation': 'H'}
 
     # Common settings for sequences
     network = {'Frame Title': 'Select network connection:',
-                'VarName': MeasurementConst.var_call_net,
+                'VarName': var_call_net,
                 'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'],
                 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP'],
                 'Orientation': 'H'}
     vocoder = {'Frame Title': 'Select vocoder:',
-                'VarName': MeasurementConst.var_call_vc,
+                'VarName': var_call_vc,
                 'Options': ['AMR', 'EVS'],
                 'Values': ['AMR', 'EVS'],
                 'Orientation': 'H',
-                'GrayOutSingleRadioButton': {'EVS': {MeasurementConst.var_call_net: ['GSM', 'WCDMA']}},
-                'GrayOut': {MeasurementConst.var_call_net: ['VoIP']}}
+                'GrayOutSingleRadioButton': {'EVS': {var_call_net: ['GSM', 'WCDMA']}},
+                'GrayOut': {var_call_net: ['VoIP']}}
     bandwidth = {'Frame Title': 'Select bandwidth:',
-                'VarName': MeasurementConst.var_call_bw,
+                'VarName': var_call_bw,
                 'Options': ['NB+WB', 'NB', 'WB', 'SWB', 'FB', 'Wechat(WB)', 'Teams(SWB)'],
                 'Values': ['NB+WB', 'NB', 'WB', 'SWB', 'FB', 'Wechat', 'Teams'],
                 'Orientation': 'H',
                 'GrayOutSingleRadioButton': {
-                    'NB+WB': {MeasurementConst.var_call_net: ['VoIP']},
-                    'NB': {MeasurementConst.var_call_net: ['VoIP']},
-                    'WB': {MeasurementConst.var_call_net: ['VoIP']},
-                    'SWB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','VoIP'],MeasurementConst.var_call_vc: ['AMR']},
-                    'FB': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','VoIP'],MeasurementConst.var_call_vc: ['AMR']},
-                    'Wechat': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']},
-                    'Teams': {MeasurementConst.var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']}},
-                'GrayOut': {MeasurementConst.var_seq_test_mode: ['loop']}}
+                    'NB+WB': {var_call_net: ['VoIP']},
+                    'NB': {var_call_net: ['VoIP']},
+                    'WB': {var_call_net: ['VoIP']},
+                    'SWB': {var_call_net: ['GSM', 'WCDMA','VoIP'],var_call_vc: ['AMR']},
+                    'FB': {var_call_net: ['GSM', 'WCDMA','VoIP'],var_call_vc: ['AMR']},
+                    'Wechat': {var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']},
+                    'Teams': {var_call_net: ['GSM', 'WCDMA','LTE','5GNR','WLAN']}},
+                'GrayOut': {var_seq_test_mode: ['loop']}}
     usecase = {'Frame Title': 'Select usecase:',
-                'VarName': MeasurementConst.var_dut_uc,
+                'VarName': var_dut_uc,
                 'Options': ['All Usecase', 'Handset', 'Headset', 'Handsfree', 'Bluetooth', 'Headset Interface'],
                 'Values': ['All', 'HA', 'HE', 'HH', 'BT', 'HI'],
                 'Orientation': 'H'}
     hs_type = {'Frame Title': 'Select headset type:',
-                'VarName': MeasurementConst.var_dut_hs_type,
+                'VarName': var_dut_hs_type,
                 'Options': ['Analog Binaural', 'Digital Binaural', 'Bluetooth Binaural', 'Analog Monaural', 'Digital Monaural', 'Bluetooth Monaural'],
                 'Values': ['AnaBin', 'DigiBin', 'BTBin', 'AnaMono', 'DigiMono', 'BTMono'],
                 'Orientation': 'H',
-                'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}}
+                'GrayOut': {var_dut_uc: ['HA','HH','BT','HI']}}
 
     # Specific settings for TMO
     phone_tier_tmo = {'Frame Title': 'Select tier of the phone:',
@@ -115,79 +115,79 @@ class VoiceMeasurementSetting():
                 'Options': ['Two or More', 'Single'],
                 'Values': ['2', '1'],
                 'Orientation': 'H',
-                'GrayOut': {MeasurementConst.var_dut_uc: ['HE','HH','BT','HI']}}
+                'GrayOut': {var_dut_uc: ['HE','HH','BT','HI']}}
     mic_nc_he = mic_nc_ha.copy()
-    mic_nc_he.update({'Frame Title': 'Select microphone number for noise cancellation in headset mode:', 'VarName': 'DUTNCMicsHE', 'GrayOut': {MeasurementConst.var_dut_uc: ['HA','HH','BT','HI']}})
+    mic_nc_he.update({'Frame Title': 'Select microphone number for noise cancellation in headset mode:', 'VarName': 'DUTNCMicsHE', 'GrayOut': {var_dut_uc: ['HA','HH','BT','HI']}})
 
-    @staticmethod
-    def check_global_var(seq_name='Default', seq_uc='All'):
-        if not Variables.Exists(MeasurementConst.var_sys_labname):
-            VoiceMeasurementSetting.set_const_var()
-        if not Variables.Exists(MeasurementConst.var_seq_name):
-            VoiceMeasurementSetting.set_seq_tag(seq_name, seq_uc)
-            VoiceMeasurementSetting.set_global_config()
+    @classmethod
+    def check_global_var(cls,seq_name='Default', seq_uc='All'):
+        if not Variables.Exists(cls.var_sys_labname):
+            cls.set_const_var()
+        if not Variables.Exists(cls.var_seq_name):
+            cls.set_seq_tag(seq_name, seq_uc)
+            cls.set_global_config()
 
-    @staticmethod
-    def set_const_var():
-        if Variables.Exists(MeasurementConst.var_sys_desc):
-            desc = get_var_value(MeasurementConst.var_sys_desc)
-        elif Variables.Exists('System.{MeasurementConst.var_sys_desc}'):
-            desc = get_var_value('System.{MeasurementConst.var_sys_desc}')
+    @classmethod
+    def set_const_var(cls):
+        if Variables.Exists(cls.var_sys_desc):
+            desc = get_var_value(cls.var_sys_desc)
+        elif Variables.Exists('System.{cls.var_sys_desc}'):
+            desc = get_var_value('System.{cls.var_sys_desc}')
         else:
-            desc = MeasurementConst.var_dflt_sys_desc
-            save_var('System.{MeasurementConst.var_sys_desc}', desc, const.evsUserDefined, '', desc, '', False)
-        for key, val in MeasurementConst.var_dflt_sys_equip.items():
+            desc = cls.var_dflt_sys_desc
+            save_var('System.{cls.var_sys_desc}', desc, const.evsUserDefined, '', desc, '', False)
+        for key, val in cls.var_dflt_sys_equip.items():
             if not Variables.Exists(key):
                 if Variables.Exists('System.{key}'):
                     val = get_var_value('System.{key}')
                 else:
                     save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
                 save_var(key, val, const.evsUserDefined, '', desc, '', False)
-        for key, val in MeasurementConst.var_dflt_sys_val.items():
+        for key, val in cls.var_dflt_sys_val.items():
             if not Variables.Exists(key):
                 if Variables.Exists('System.{key}'):
                     val = get_var_value('System.{key}')
                 else:
                     save_var('System.{key}', val[0], const.evsUserDefined, val[1], desc, '', False)
                 save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
-        for key, val in MeasurementConst.var_dflt_test:
+        for key, val in cls.var_dflt_test:
             if not Variables.Exists('System.{key}'):
                 save_var('System.{key}', val, const.evsUserDefined, '', desc, '', False)
 
-    @staticmethod
-    def set_seq_tag(seq_name, seq_uc):
-        save_var(MeasurementConst.var_seq_name, seq_name, const.evsUserDefined, '', '', Smd.Title, False)
-        save_var(MeasurementConst.var_seq_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, False)
+    @classmethod
+    def set_seq_tag(cls,seq_name, seq_uc):
+        save_var(cls.var_seq_name, seq_name, const.evsUserDefined, '', '', Smd.Title, False)
+        save_var(cls.var_seq_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, False)
 
-    @staticmethod
-    def set_global_config():
-        seq_name = get_var_value(MeasurementConst.var_seq_name)
-        seq_uc = get_var_value(MeasurementConst.var_seq_uc)
+    @classmethod
+    def set_global_config(cls):
+        seq_name = get_var_value(cls.var_seq_name)
+        seq_uc = get_var_value(cls.var_seq_uc)
         if 'All' != seq_uc and seq_uc in ['HA', 'HE', 'HH', 'BT', 'HI']:
-            usecase = VoiceMeasurementSetting.usecase
-            usecase.update({'GrayOut': {VoiceMeasurementSetting.seq_test_mode: ['single','loop']}})
-            save_var(MeasurementConst.var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
+            usecase = cls.usecase
+            usecase.update({'GrayOut': {cls.seq_test_mode: ['single','loop']}})
+            save_var(cls.var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
         if 'TMO' == seq_name:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.phone_tier_tmo, VoiceMeasurementSetting.network_tmo, VoiceMeasurementSetting.vocoder, usecase, VoiceMeasurementSetting.mic_nc_ha, VoiceMeasurementSetting.mic_nc_he, VoiceMeasurementSetting.hs_type)
+            run_universal_questionnaire_gui(cls.seq_test_mode, cls.phone_tier_tmo, cls.network_tmo, cls.vocoder, usecase, cls.mic_nc_ha, cls.mic_nc_he, cls.hs_type)
         elif 'BigRule' == seq_name:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, usecase, VoiceMeasurementSetting.hs_type)
+            run_universal_questionnaire_gui(cls.seq_test_mode, cls.network, cls.vocoder, usecase, cls.hs_type)
         else:
-            run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth,usecase, VoiceMeasurementSetting.hs_type)
+            run_universal_questionnaire_gui(cls.seq_filter_mode, cls.seq_test_mode, cls.network, cls.vocoder, cls.bandwidth,usecase, cls.hs_type)
 
-    @staticmethod
-    def network_flow():
-        if 'loop' == get_var_value(MeasurementConst.var_seq_test_mode):
-            if not Variables.Exists(MeasurementConst.var_test_net_flow):
-                networks = VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_net_flow)
+    @classmethod
+    def network_flow(cls):
+        if 'loop' == get_var_value(cls.var_seq_test_mode):
+            if not Variables.Exists(cls.var_test_net_flow):
+                networks = VoiceMeasurementHelper.get_defined_var(cls.var_test_net_flow)
             else:
-                networks = get_var_value(MeasurementConst.var_test_net_flow)
+                networks = get_var_value(cls.var_test_net_flow)
             if networks:
                 networks = networks.split(',')
-                save_var(MeasurementConst.var_test_net_flow, ','.join(networks[1:]), const.evsUserDefined, '', 'Networks for loop mode', Smd.Title, True)
+                save_var(cls.var_test_net_flow, ','.join(networks[1:]), const.evsUserDefined, '', 'Networks for loop mode', Smd.Title, True)
                 networks = networks[0].split('_')
-                save_var(MeasurementConst.var_call_net, networks[0], const.evsUserDefined, '', 'Current network selected for loop mode', Smd.Title, True)
-                save_var(MeasurementConst.var_call_vc, networks[1], const.evsUserDefined, '', 'Current vocoder selected for loop mode', Smd.Title, True)
-                save_var(MeasurementConst.var_call_bw, networks[2], const.evsUserDefined, '', 'Current bandwidth selected for loop mode', Smd.Title, True)
+                save_var(cls.var_call_net, networks[0], const.evsUserDefined, '', 'Current network selected for loop mode', Smd.Title, True)
+                save_var(cls.var_call_vc, networks[1], const.evsUserDefined, '', 'Current vocoder selected for loop mode', Smd.Title, True)
+                save_var(cls.var_call_bw, networks[2], const.evsUserDefined, '', 'Current bandwidth selected for loop mode', Smd.Title, True)
             else:
                 raise Exception('No more network defined for loop mode.')
 
@@ -205,8 +205,8 @@ class VoiceMeasurementHelper():
     @staticmethod
     def get_scenario():
         scenario = {'HA':'earpiece', 'HE':'headset', 'HH':'speaker', 'BT':'bt_a2dp'}
-        if Variables.Exists(MeasurementConst.var_dut_hs_type):
-            hstype = get_var_value(MeasurementConst.var_dut_hs_type)
+        if Variables.Exists(VoiceMeasurementSetting.var_dut_hs_type):
+            hstype = get_var_value(VoiceMeasurementSetting.var_dut_hs_type)
             if hstype.startswith('Digi'):
                 scenario['HE'] = 'usb_headset'
             elif hstype.startswith('BT'):
@@ -226,16 +226,16 @@ class VoiceMeasurementHelper():
 
     @staticmethod
     def get_network():
-        if Variables.Exists(MeasurementConst.var_call_net):
-            network = get_var_value(MeasurementConst.var_call_net)
+        if Variables.Exists(VoiceMeasurementSetting.var_call_net):
+            network = get_var_value(VoiceMeasurementSetting.var_call_net)
         else:
             network = None
         return network
 
     @staticmethod
     def get_vocoder():
-        if Variables.Exists(MeasurementConst.var_call_vc):
-            vocoder = get_var_value(MeasurementConst.var_call_vc)
+        if Variables.Exists(VoiceMeasurementSetting.var_call_vc):
+            vocoder = get_var_value(VoiceMeasurementSetting.var_call_vc)
         else:
             vocoder = None
         return vocoder
@@ -244,9 +244,9 @@ class VoiceMeasurementHelper():
     def get_bandwidth(base=True):
         if Tags.Exists('Bandwidth'):
             bandwidth = get_tag_values('Bandwidth')
-            if base and Variables.Exists(MeasurementConst.var_call_bw):
-                bw = get_var_value(MeasurementConst.var_call_bw)
-                if ('SWB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_swb_base)) or ('FB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_fb_base)):
+            if base and Variables.Exists(VoiceMeasurementSetting.var_call_bw):
+                bw = get_var_value(VoiceMeasurementSetting.var_call_bw)
+                if ('SWB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(VoiceMeasurementSetting.var_test_swb_base)) or ('FB' == bw and bandwidth == VoiceMeasurementHelper.get_defined_var(VoiceMeasurementSetting.var_test_fb_base)):
                     bandwidth = bw
         else:
             bandwidth = None
@@ -265,21 +265,21 @@ class VoiceMeasurementHelper():
 
     def init_adb(self, sn=None):
         # Check DUT Remote Control
-        if not Smd.Cancel and self.get_defined_var(MeasurementConst.var_dut_remo_ctr):
-            if not AdbPhoneControl.connected() and 'WiFi' == self.get_defined_var(MeasurementConst.var_dut_remo_ctr_mode) and self.get_defined_var(MeasurementConst.var_dut_wifi_addr):
-                AdbPhoneControl.cmd(['adb','connect', self.get_defined_var(MeasurementConst.var_dut_wifi_addr)])
+        if not Smd.Cancel and self.get_defined_var(VoiceMeasurementSetting.var_dut_remo_ctr):
+            if not AdbPhoneControl.connected() and 'WiFi' == self.get_defined_var(VoiceMeasurementSetting.var_dut_remo_ctr_mode) and self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr):
+                AdbPhoneControl.cmd(['adb','connect', self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr)])
             # Notice if adb connection fail
             if not AdbPhoneControl.connected():
                 ret = HelperFunctions.MessageBox('Adb connection fail.\nPress YES to continue the test without DUT remote control.\nPress NO to stop the test.', 'Info', 0x41)
                 if 2 == ret:
                     Smd.Cancel = True
                 else:
-                    save_var(MeasurementConst.var_dut_remo_ctr, AdbPhoneControl.connected(), const.evsUserDefined)
+                    save_var(VoiceMeasurementSetting.var_dut_remo_ctr, AdbPhoneControl.connected(), const.evsUserDefined)
 
     def init_cmw(self):
         self.cmw = CMWController()
         # Check CMW Remote Control
-        if not Smd.Cancel and self.get_defined_var(MeasurementConst.var_cmw_remo_ctr):
+        if not Smd.Cancel and self.get_defined_var(VoiceMeasurementSetting.var_cmw_remo_ctr):
             ret = 0
             if None in (self.network, self.vocoder, self.bandwidth):
                 ret = HelperFunctions.MessageBox('Missing CMW control vars, will disable CMW remote control.', 'Info', 0x41)
@@ -292,7 +292,7 @@ class VoiceMeasurementHelper():
             if 2 == ret:
                 Smd.Cancel = True
             else:
-                save_var(MeasurementConst.var_cmw_remo_ctr, self.cmw.connected, const.evsUserDefined)
+                save_var(VoiceMeasurementSetting.var_cmw_remo_ctr, self.cmw.connected, const.evsUserDefined)
 
     def establish_call(self):
         ret = 0
@@ -320,8 +320,8 @@ class VoiceMeasurementHelper():
                     cnt += 1
             if not self.cmw.get_established():
                 ret = HelperFunctions.MessageBox('Fail to establish the call, check the calling step!', 'Info', 0x41)
-            elif 'HH' == self.usecase and self.get_defined_var(MeasurementConst.var_dut_hh_pos):
-                AdbPhoneControl.input(['tap', self.get_defined_var(MeasurementConst.var_dut_hh_pos)])
+            elif 'HH' == self.usecase and self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos):
+                AdbPhoneControl.input(['tap', self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos)])
         if 2 == ret:
             Smd.Cancel = True
         else:
@@ -379,7 +379,7 @@ class VoiceMeasurementHelper():
         if Tags.Exists('AppForce'):
             force = get_tag_values('AppForce')
         elif Tags.Exists('Direction'):
-            force = self.get_defined_var(MeasurementConst.var_test_dflt_force)
+            force = self.get_defined_var(VoiceMeasurementSetting.var_test_dflt_force)
         else:
             force = force_cur
         if force_cur != force:
@@ -513,20 +513,20 @@ class VoiceMeasurementHelper():
     def set_bgn_setup():
         bgns = get_tag_values('BGNScenario')
         if bgns.startswith('NG:'):
-            save_var('BGNSetup', MeasurementConst.var_sys_bgnset_noise, const.evsUserDefined, '', 'Setup for Noise Generator.', Smd.Title, True)
+            save_var('BGNSetup', VoiceMeasurementSetting.var_sys_bgnset_noise, const.evsUserDefined, '', 'Setup for Noise Generator.', Smd.Title, True)
         else:
-            save_var('BGNSetup', MeasurementConst.var_sys_bgnset_audio, const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
+            save_var('BGNSetup', VoiceMeasurementSetting.var_sys_bgnset_audio, const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
 
 class MeasurementSupport():
     # Run before each measurement
     @staticmethod
     def before_each_measurement():
         VoiceMeasurementSetting.check_global_var()
-        if 'VoIP' == get_var_value(MeasurementConst.var_call_net):
-            save_var(MeasurementConst.var_cmw_remo_ctr, False, const.evsUserDefined)
+        if 'VoIP' == get_var_value(VoiceMeasurementSetting.var_call_net):
+            save_var(VoiceMeasurementSetting.var_cmw_remo_ctr, False, const.evsUserDefined)
         vmh = VoiceMeasurementHelper()
         set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
-        if 'VoIP' != get_var_value(MeasurementConst.var_call_net):
+        if 'VoIP' != get_var_value(VoiceMeasurementSetting.var_call_net):
             vmh.cmw.interface.Connect()
             # Check call alive or establish call
             if not Smd.Cancel:
@@ -554,7 +554,7 @@ class MeasurementSupport():
                 ret = HelperFunctions.MessageBox('Start charging the phone.', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
-        if 'VoIP' != get_var_value(MeasurementConst.var_call_net):
+        if 'VoIP' != get_var_value(VoiceMeasurementSetting.var_call_net):
             vmh.cmw.interface.Disconnect()
 
     # Run after each measurement
