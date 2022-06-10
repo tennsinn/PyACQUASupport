@@ -24,6 +24,8 @@ class MeasurementConst():
     var_sys_dranda = 'D_RAN_DA'
     var_sys_dsrrea = 'D_SR_REA'
     var_sys_desc = 'EquipDesc'
+    var_sys_bgnset_noise = 'BGNSetupNoise'
+    var_sys_bgnset_audio = 'BGNSetupAudio'
     var_dut_remo_ctr = 'DUTRemoteControl'
     var_dut_remo_ctr_mode = 'DUTRemoteControlMode'
     var_dut_wifi_addr = 'DUTWifiAddr'
@@ -43,7 +45,7 @@ class MeasurementConst():
     var_seq_name = 'SeqName'
     var_seq_uc = 'SeqUsecase'
 
-    var_dflt_sys_equip = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ'}
+    var_dflt_sys_equip = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ', var_sys_bgnset_audio: '3quest', var_sys_bgnset_noise: 'Default'}
     var_dflt_sys_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
     var_dflt_sys_desc = 'Default environment settings'
     var_dflt_test = {var_test_dflt_force: '8N', var_test_swb_base: 'WB', var_test_fb_base: 'WB', var_test_net_flow: 'VoLTE_AMR_NB+WB,VoLTE_EVS_NB+WB'}
@@ -502,18 +504,18 @@ class VoiceMeasurementHelper():
             Smd.Cancel = True
 
     @staticmethod
-    def stop_LabBGN():
+    def stop_bgn_play():
         bgn_config = BGNConfigurator()
         if bgn_config.has_controller():
             bgn_config.stop_bgn()
 
     @staticmethod
-    def setup_bgn():
+    def set_bgn_setup():
         bgns = get_tag_values('BGNScenario')
         if bgns.startswith('NG:'):
-            save_var('BGNSetup', 'Default', const.evsUserDefined, '', 'Setup for other tests.', Smd.Title, True)
+            save_var('BGNSetup', MeasurementConst.var_sys_bgnset_noise, const.evsUserDefined, '', 'Setup for Noise Generator.', Smd.Title, True)
         else:
-            save_var('BGNSetup', '3quest', const.evsUserDefined, '', 'Setup for 3Quest test.', Smd.Title, True)
+            save_var('BGNSetup', MeasurementConst.var_sys_bgnset_audio, const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
 
 class MeasurementSupport():
     # Run before each measurement
@@ -541,7 +543,7 @@ class MeasurementSupport():
         if not Smd.Cancel and 'HA' == vmh.usecase:
             vmh.set_force()
         if not Smd.Cancel and Tags.Exists('BGNScenario'):
-            vmh.setup_bgn()
+            vmh.set_bgn_setup()
         # Apply defined action
         if not Smd.Cancel and Tags.Exists('Action'):
             ret = 0
@@ -580,4 +582,4 @@ class MeasurementSupport():
         if Variables.Exists('current_bitrate'):
             delete_vars('current_bitrate')
         if Tags.Exists('BGNScenario'):
-            VoiceMeasurementHelper.stop_LabBGN()
+            VoiceMeasurementHelper.stop_bgn_play()
