@@ -39,6 +39,7 @@ class MeasurementConst():
     var_test_dflt_force = 'TestDefaultAppForce'
     var_test_swb_base = 'TestSWBBase'
     var_test_fb_base = 'TestFBBase'
+    var_test_net_flow = 'TestNetworkFlow'
     var_seq_filter_mode = 'SeqFilterMode'
     var_seq_test_mode = 'SeqTestMode'
     var_seq_name = 'SeqName'
@@ -55,7 +56,6 @@ class VoiceMeasurementSetting():
                 'Options': ['Lite version', 'Mini version', 'Full version'],
                 'Values': ['lite', 'mini', 'full'],
                 'Orientation': 'H'}
-    # Todo: add loop mode functions
     seq_test_mode = {'Frame Title': 'Select sequence test mode:',
                 'VarName': MeasurementConst.var_seq_test_mode,
                 'Options': ['Single mode', 'Loop mode'],
@@ -164,6 +164,23 @@ class VoiceMeasurementSetting():
             run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, usecase, VoiceMeasurementSetting.hs_type)
         else:
             run_universal_questionnaire_gui(VoiceMeasurementSetting.seq_filter_mode, VoiceMeasurementSetting.seq_test_mode, VoiceMeasurementSetting.network, VoiceMeasurementSetting.vocoder, VoiceMeasurementSetting.bandwidth,usecase, VoiceMeasurementSetting.hs_type)
+
+    @staticmethod
+    def network_flow():
+        if 'loop' == get_var_value(MeasurementConst.var_seq_test_mode):
+            if not Variables.Exists(MeasurementConst.var_test_net_flow):
+                networks = VoiceMeasurementHelper.get_defined_var(MeasurementConst.var_test_net_flow)
+            else:
+                networks = get_var_value(MeasurementConst.var_test_net_flow)
+            if networks:
+                networks = networks.split(',')
+                save_var(MeasurementConst.var_test_net_flow, ','.join(networks[1:]), const.evsUserDefined, '', 'Networks for loop mode', Smd.Title, True)
+                networks = networks[0].split('_')
+                save_var(MeasurementConst.var_call_net, networks[0], const.evsUserDefined, '', 'Current network selected for loop mode', Smd.Title, True)
+                save_var(MeasurementConst.var_call_vc, networks[1], const.evsUserDefined, '', 'Current vocoder selected for loop mode', Smd.Title, True)
+                save_var(MeasurementConst.var_call_bw, networks[2], const.evsUserDefined, '', 'Current bandwidth selected for loop mode', Smd.Title, True)
+            else:
+                raise Exception('No more network defined for loop mode.')
 
 class VoiceMeasurementHelper():
     def __init__(self):
