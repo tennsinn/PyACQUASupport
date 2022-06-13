@@ -513,9 +513,9 @@ class VoiceMeasurementHelper():
     def set_bgn_setup():
         bgns = get_tag_values('BGNScenario')
         if bgns.startswith('NG:'):
-            save_var('BGNSetup', VoiceMeasurementSetting.var_sys_bgnset_noise, const.evsUserDefined, '', 'Setup for Noise Generator.', Smd.Title, True)
+            save_var('BGNSetup', get_var_value(VoiceMeasurementSetting.var_sys_bgnset_noise), const.evsUserDefined, '', 'Setup for Noise Generator.', Smd.Title, True)
         else:
-            save_var('BGNSetup', VoiceMeasurementSetting.var_sys_bgnset_audio, const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
+            save_var('BGNSetup', get_var_value(VoiceMeasurementSetting.var_sys_bgnset_audio), const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
 
 class MeasurementSupport():
     # Run before each measurement
