@@ -49,7 +49,7 @@ class VoiceMeasurementSetting():
     var_dflt_sys_equip = {var_sys_labname: 'Audio Lab', var_sys_frontend: 'labCORE', var_sys_simulator: 'CMW500', var_sys_bgncon: 'USB', var_sys_bgnsoft: 'AutoEQ', var_sys_bgnset_audio: '3quest', var_sys_bgnset_noise: 'Default'}
     var_dflt_sys_val = {var_sys_maxuncer: [20, 'ms'], var_sys_dranad: [0.46, 'ms'], var_sys_dranda: [0.67, 'ms'], var_sys_dsrrea: [1.13, 'ms']}
     var_dflt_sys_desc = 'Default environment settings'
-    var_dflt_test = {var_test_dflt_force: '8N', var_test_swb_base: 'WB', var_test_fb_base: 'WB', var_test_net_flow: 'VoLTE_AMR_NB+WB,VoLTE_EVS_NB+WB'}
+    var_dflt_test = {var_test_dflt_force: '8N', var_test_swb_base: 'WB', var_test_fb_base: 'WB', var_test_net_flow: 'LTE_AMR_NB+WB,LTE_EVS_NB+WB,LTE_EVS_SWB'}
 
     # Settings for sequence running
     seq_filter_mode = {'Frame Title': 'Select sequence filter mode:',
@@ -68,14 +68,15 @@ class VoiceMeasurementSetting():
                 'VarName': var_call_net,
                 'Options': ['GSM', 'WCDMA', 'LTE', '5G', 'WLAN', 'VoIP'],
                 'Values': ['GSM', 'WCDMA', 'LTE', '5GNR', 'WLAN', 'VoIP'],
-                'Orientation': 'H'}
+                'Orientation': 'H',
+                'GrayOut': {var_seq_test_mode: ['loop']}}
     vocoder = {'Frame Title': 'Select vocoder:',
                 'VarName': var_call_vc,
                 'Options': ['AMR', 'EVS'],
                 'Values': ['AMR', 'EVS'],
                 'Orientation': 'H',
                 'GrayOutSingleRadioButton': {'EVS': {var_call_net: ['GSM', 'WCDMA']}},
-                'GrayOut': {var_call_net: ['VoIP']}}
+                'GrayOut': {var_call_net: ['VoIP'], var_seq_test_mode: ['loop']}}
     bandwidth = {'Frame Title': 'Select bandwidth:',
                 'VarName': var_call_bw,
                 'Options': ['NB+WB', 'NB', 'WB', 'SWB', 'FB', 'Wechat(WB)', 'Teams(SWB)'],
@@ -146,41 +147,40 @@ class VoiceMeasurementSetting():
         for key, val in cls.var_dflt_sys_val.items():
             if not Variables.Exists(key):
                 if Variables.Exists(f'system.{key}'):
-                    val = get_var_value(f'system.{key}')
+                    val[0] = Variables.GetItem(f'system.{key}').Value
+                    val[1] = Variables.GetItem(f'system.{key}').PhysicalUnit
                 else:
                     save_var(f'system.{key}', val[0], const.evsUserDefined, val[1], desc, '', False)
                 save_var(key, val[0], const.evsUserDefined, val[1], desc, '', False)
-        for key, val in cls.var_dflt_test:
+        for key, val in cls.var_dflt_test.items():
             if not Variables.Exists(f'system.{key}'):
                 save_var(f'system.{key}', val, const.evsUserDefined, '', desc, '', False)
 
     @classmethod
-    def set_seq_tag(cls,seq_name, seq_uc):
+    def set_seq_tag(cls, seq_name, seq_uc):
         save_var(cls.var_seq_name, seq_name, const.evsUserDefined, '', '', Smd.Title, False)
         save_var(cls.var_seq_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, False)
 
     @classmethod
     def set_global_config(cls):
-        seq_name = get_var_value(cls.var_seq_name)
-        seq_uc = get_var_value(cls.var_seq_uc)
-        if 'All' != seq_uc and seq_uc in ['HA', 'HE', 'HH', 'BT', 'HI']:
+        if not Variables.Exists(cls.var_seq_test_mode) or 'loop' != get_var_value(cls.var_seq_test_mode):
+            seq_name = get_var_value(cls.var_seq_name)
+            seq_uc = get_var_value(cls.var_seq_uc)
             usecase = cls.usecase
-            usecase.update({'GrayOut': {cls.seq_test_mode: ['single','loop']}})
-            save_var(cls.var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
-        if 'TMO' == seq_name:
-            run_universal_questionnaire_gui(cls.seq_test_mode, cls.phone_tier_tmo, cls.network_tmo, cls.vocoder, usecase, cls.mic_nc_ha, cls.mic_nc_he, cls.hs_type)
-        elif 'BigRule' == seq_name:
-            run_universal_questionnaire_gui(cls.seq_test_mode, cls.network, cls.vocoder, usecase, cls.hs_type)
-        else:
-            run_universal_questionnaire_gui(cls.seq_filter_mode, cls.seq_test_mode, cls.network, cls.vocoder, cls.bandwidth,usecase, cls.hs_type)
+            if 'All' != seq_uc and seq_uc in ['HA', 'HE', 'HH', 'BT', 'HI']:
+                usecase.update({'GrayOut': {cls.seq_test_mode: ['single','loop']}})
+                save_var(cls.var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
+            if 'TMO' == seq_name:
+                run_universal_questionnaire_gui(cls.seq_test_mode, cls.phone_tier_tmo, cls.network_tmo, cls.vocoder, usecase, cls.mic_nc_ha, cls.mic_nc_he, cls.hs_type)
+            elif 'BigRule' == seq_name:
+                run_universal_questionnaire_gui(cls.seq_test_mode, cls.network, cls.vocoder, usecase, cls.hs_type)
+            else:
+                run_universal_questionnaire_gui(cls.seq_filter_mode, cls.seq_test_mode, cls.network, cls.vocoder, cls.bandwidth,usecase, cls.hs_type)
 
     @classmethod
     def network_flow(cls):
-        if 'loop' == get_var_value(cls.var_seq_test_mode):
-            if not Variables.Exists(cls.var_test_net_flow):
-                networks = VoiceMeasurementHelper.get_defined_var(cls.var_test_net_flow)
-            else:
-                networks = get_var_value(cls.var_test_net_flow)
+        if Variables.Exists(cls.var_seq_test_mode) and 'loop' == get_var_value(cls.var_seq_test_mode):
+            networks = get_var_value(cls.var_test_net_flow)
             if networks:
                 networks = networks.split(',')
                 save_var(cls.var_test_net_flow, ','.join(networks[1:]), const.evsUserDefined, '', 'Networks for loop mode', Smd.Title, True)
@@ -569,6 +569,8 @@ class MeasurementSupport():
                 VoiceMeasurementHelper.backup_delay()
             if 2 == ret:
                 Smd.Cancel = True
+        if 'loop' == get_var_value(VoiceMeasurementSetting.var_seq_test_mode):
+            Smd.ResultComment = get_var_value(VoiceMeasurementSetting.var_call_net)+'_'+get_var_value(VoiceMeasurementSetting.var_call_vc)+'_'+VoiceMeasurementHelper.get_bandwidth()
 
     # Run after canceled measurement
     @staticmethod
