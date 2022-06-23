@@ -542,7 +542,6 @@ class MeasurementSupport():
         vmh = VoiceMeasurementHelper()
         set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
         if 'VoIP' != get_var_value(VoiceMeasurementSetting.var_call_net):
-            vmh.cmw.interface.Connect()
             # Check call alive or establish call
             if not Smd.Cancel:
                 vmh.check_call_alive()
@@ -569,8 +568,6 @@ class MeasurementSupport():
                 ret = HelperFunctions.MessageBox('Start charging the phone.', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
-        if 'VoIP' != get_var_value(VoiceMeasurementSetting.var_call_net):
-            vmh.cmw.interface.Disconnect()
 
     # Run after each measurement
     @staticmethod
