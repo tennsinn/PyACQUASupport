@@ -151,16 +151,16 @@ def set_global_config():
     if not Variables.Exists(var_seq_test_mode) or 'loop' != get_var_value(var_seq_test_mode):
         seq_name = get_var_value(var_seq_name)
         seq_uc = get_var_value(var_seq_uc)
-        usecase = usecase
+        usecase_set = usecase
         if 'All' != seq_uc and seq_uc in ['HA', 'HE', 'HH', 'BT', 'HI']:
-            usecase.update({'GrayOut': {seq_test_mode: ['single','loop']}})
+            usecase_set.update({'GrayOut': {seq_test_mode: ['single','loop']}})
             save_var(var_dut_uc, seq_uc, const.evsUserDefined, '', '', Smd.Title, True)
         if 'TMO' == seq_name:
-            run_universal_questionnaire_gui(seq_test_mode, phone_tier_tmo, network_tmo, vocoder, usecase, mic_nc_ha, mic_nc_he, hs_type)
+            run_universal_questionnaire_gui(seq_test_mode, phone_tier_tmo, network_tmo, vocoder, usecase_set, mic_nc_ha, mic_nc_he, hs_type)
         elif 'BigRule' == seq_name:
-            run_universal_questionnaire_gui(seq_test_mode, network, vocoder, usecase, hs_type)
+            run_universal_questionnaire_gui(seq_test_mode, network, vocoder, usecase_set, hs_type)
         else:
-            run_universal_questionnaire_gui(seq_filter_mode, seq_test_mode, network, vocoder, bandwidth,usecase, hs_type)
+            run_universal_questionnaire_gui(seq_filter_mode, seq_test_mode, network, vocoder, bandwidth, usecase_set, hs_type)
 
 def network_flow():
     if Variables.Exists(var_seq_test_mode) and 'loop' == get_var_value(var_seq_test_mode):

@@ -27,7 +27,7 @@ def before_each_measurement():
     if not Smd.Cancel and Tags.Exists('VolumeCTRL'):
         vmh.set_volume()
     # Check apllication force
-    if not Smd.Cancel and 'HA' == vmh.usecase:
+    if not Smd.Cancel and 'HA' == vmh.VoiceMeasurementConfig.usecase:
         vmh.set_force()
     if not Smd.Cancel and Tags.Exists('BGNScenario'):
         vmh.set_bgn_setup()
