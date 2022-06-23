@@ -13,6 +13,8 @@ def before_each_measurement():
     if 'VoIP' == get_var_value(vms.var_call_net):
         save_var(vms.var_cmw_remo_ctr, False, const.evsUserDefined)
     vmh.VoiceMeasurementConfig.update_config()
+    vmh.init_adb()
+    vmh.init_cmw()
     set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
     if 'VoIP' != get_var_value(vms.var_call_net):
         # Check call alive or establish call
