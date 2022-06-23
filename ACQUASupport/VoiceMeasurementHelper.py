@@ -146,7 +146,7 @@ def init_adb():
     # Check DUT Remote Control
     if not Smd.Cancel and get_defined_var(vms.var_dut_remo_ctr):
         if not adbpc.connected() and 'WiFi' == get_defined_var(vms.var_dut_remo_ctr_mode) and get_defined_var(vms.var_dut_wifi_addr):
-            adbpc.cmd(['adb','connect', get_defined_var(vms.var_dut_wifi_addr)])
+            adbpc.run(['adb','connect', get_defined_var(vms.var_dut_wifi_addr)])
         # Notice if adb connection fail
         if not adbpc.connected():
             ret = HelperFunctions.MessageBox('Adb connection fail.\nPress YES to continue the test without DUT remote control.\nPress NO to stop the test.', 'Info', 0x41)

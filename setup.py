@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='ACQUASupport',
-    version='1.3.1',
+    version='1.3.4',
     description='',
     keywords=['adb', 'android'],
     author='tennsinn',
