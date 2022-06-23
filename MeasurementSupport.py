@@ -10,7 +10,7 @@ from HSL.MeasurementHandlings.BGN.BGNRemote import RemoteControlHAE, BGNConnecti
 from HSL.MeasurementHandlings.BGN.BGNConfigurator import BGNConfigurator
 from HEAD import const
 
-from AdbPhoneControl import *
+import ADBPhoneControl as adbpc
 from CMWController import *
 
 class VoiceMeasurementSetting():
@@ -266,15 +266,15 @@ class VoiceMeasurementHelper():
     def init_adb(self, sn=None):
         # Check DUT Remote Control
         if not Smd.Cancel and self.get_defined_var(VoiceMeasurementSetting.var_dut_remo_ctr):
-            if not AdbPhoneControl.connected() and 'WiFi' == self.get_defined_var(VoiceMeasurementSetting.var_dut_remo_ctr_mode) and self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr):
-                AdbPhoneControl.cmd(['adb','connect', self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr)])
+            if not adbpc.connected() and 'WiFi' == self.get_defined_var(VoiceMeasurementSetting.var_dut_remo_ctr_mode) and self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr):
+                adbpc.cmd(['adb','connect', self.get_defined_var(VoiceMeasurementSetting.var_dut_wifi_addr)])
             # Notice if adb connection fail
-            if not AdbPhoneControl.connected():
+            if not adbpc.connected():
                 ret = HelperFunctions.MessageBox('Adb connection fail.\nPress YES to continue the test without DUT remote control.\nPress NO to stop the test.', 'Info', 0x41)
                 if 2 == ret:
                     Smd.Cancel = True
                 else:
-                    save_var(VoiceMeasurementSetting.var_dut_remo_ctr, AdbPhoneControl.connected(), const.evsUserDefined)
+                    save_var(VoiceMeasurementSetting.var_dut_remo_ctr, adbpc.connected(), const.evsUserDefined)
 
     def init_cmw(self):
         self.cmw = CMWController()
@@ -306,11 +306,11 @@ class VoiceMeasurementHelper():
             self.cmw.init_config()
             self.cmw.put_mtcall()
             cnt = 0
-            if AdbPhoneControl.connected():
+            if adbpc.connected():
                 # Pickup call via adb
-                while AdbCallState.INCALL not in AdbPhoneControl.call_state() and cnt < self.timeout_dut:
-                    if AdbCallState.RING in AdbPhoneControl.call_state():
-                        AdbPhoneControl.key_call()
+                while adbpc.CallState.INCALL not in adbpc.call_state() and cnt < self.timeout_dut:
+                    if adbpc.CallState.RING in adbpc.call_state():
+                        adbpc.key_call()
                     time.sleep(1)
                     cnt += 1
             else:
@@ -321,7 +321,7 @@ class VoiceMeasurementHelper():
             if not self.cmw.get_established():
                 ret = HelperFunctions.MessageBox('Fail to establish the call, check the calling step!', 'Info', 0x41)
             elif 'HH' == self.usecase and self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos):
-                AdbPhoneControl.input(['tap', self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos)])
+                adbpc.input(['tap', self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos)])
         if 2 == ret:
             Smd.Cancel = True
         else:
@@ -343,12 +343,12 @@ class VoiceMeasurementHelper():
         if Variables.Exists('VOL_MIN_'+usecase+bandwidth):
             MINVol = get_var_value('VOL_MIN_'+usecase+bandwidth)
         else:
-            MINVol = int(AdbPhoneControl.stream_volumes('VOICE_CALL')['Min'])
+            MINVol = int(adbpc.stream_volumes('VOICE_CALL')['Min'])
             save_var('VOL_MIN_'+usecase+bandwidth, MINVol, const.evsMeasured, '', 'Auto read from DUT via adb remote control.', Smd.Title, False)
         if Variables.Exists('VOL_MAX_'+usecase+bandwidth):
             MAXVol = get_var_value('VOL_MAX_'+usecase+bandwidth)
         else:
-            MAXVol = int(AdbPhoneControl.stream_volumes('VOICE_CALL')['Max'])
+            MAXVol = int(adbpc.stream_volumes('VOICE_CALL')['Max'])
             save_var('VOL_MAX_'+usecase+bandwidth, MAXVol, const.evsMeasured, '', 'Auto read from DUT via adb remote control.', Smd.Title, False)
         if Variables.Exists('VOL_NOM_'+usecase+bandwidth):
             NOMVol = get_var_value('VOL_NOM_'+usecase+bandwidth)
@@ -364,9 +364,9 @@ class VoiceMeasurementHelper():
         vol = get_tag_values('VolumeCTRL')
         vol_cur = get_var_value('current_volume') if Variables.Exists('current_volume') else ''
         if vol_cur != vol:
-            if AdbPhoneControl.connected():
+            if adbpc.connected():
                 minvol, maxvol, nomvol = self.get_volume_range(self.usecase, self.bandwidth)
-                AdbPhoneControl.set_vol_by_key('voice', self.get_scenario()[self.usecase], vol, minvol, maxvol, nomvol)
+                adbpc.set_vol_by_key('voice', self.get_scenario()[self.usecase], vol, minvol, maxvol, nomvol)
             else:
                 ret = HelperFunctions.MessageBox('Set the Volume to '+vol, 'Info', 0x41)
         if 2 == ret:
@@ -406,13 +406,13 @@ class VoiceMeasurementHelper():
 
     def release_call(self):
         ret = 0
-        if AdbPhoneControl.connected():
+        if adbpc.connected():
             cnt = 0
-            while AdbCallState.INCALL in AdbPhoneControl.call_state() and cnt < self.timeout_dut:
-                AdbPhoneControl.key_endcall()
+            while adbpc.CallState.INCALL in adbpc.call_state() and cnt < self.timeout_dut:
+                adbpc.key_endcall()
                 time.sleep(1)
                 cnt += 1
-            if AdbCallState.INCALL in AdbPhoneControl.call_state():
+            if adbpc.CallState.INCALL in adbpc.call_state():
                 ret = HelperFunctions.MessageBox('Fail to release the call via adb, release the call manually!', 'Info', 0x41)
         else:
              ret = HelperFunctions.MessageBox('Release the call manually!', 'Info', 0x41)
@@ -493,9 +493,9 @@ class VoiceMeasurementHelper():
             save_var(f'D_{direction}_EQ_{ucbw}_BAK', deq, const.evsMeasured, 'ms', 'Backup data of the original tested delay value.', Smd.Title, True)
 
     def check_call_alive(self):
-        if (AdbPhoneControl.connected() and '2' not in AdbPhoneControl.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
+        if (adbpc.connected() and '2' not in adbpc.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
             self.establish_call()
-        if (AdbPhoneControl.connected() and '2' not in AdbPhoneControl.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
+        if (adbpc.connected() and '2' not in adbpc.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
             ret = HelperFunctions.MessageBox('Call is not alive and auto connection fail.\nCheck the call connection first!', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
