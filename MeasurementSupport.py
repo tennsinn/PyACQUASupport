@@ -11,7 +11,7 @@ from HSL.MeasurementHandlings.BGN.BGNConfigurator import BGNConfigurator
 from HEAD import const
 
 import ADBPhoneControl as adbpc
-from CMWController import CMWController, get_default_bitrate
+import CMWController as cmwc
 
 class VoiceMeasurementSetting():
     # Defination of variable names
@@ -260,7 +260,7 @@ class VoiceMeasurementHelper():
             network = VoiceMeasurementHelper.get_network()
             vocoder = VoiceMeasurementHelper.get_vocoder()
             bandwidth = VoiceMeasurementHelper.get_bandwidth()
-            bitrate = get_default_bitrate(network, vocoder, bandwidth)
+            bitrate = cmwc.use_default_bitrate()
         return bitrate
 
     def init_adb(self, sn=None):
@@ -277,34 +277,33 @@ class VoiceMeasurementHelper():
                     save_var(VoiceMeasurementSetting.var_dut_remo_ctr, adbpc.connected(), const.evsUserDefined)
 
     def init_cmw(self):
-        self.cmw = CMWController()
         # Check CMW Remote Control
         if not Smd.Cancel and self.get_defined_var(VoiceMeasurementSetting.var_cmw_remo_ctr):
             ret = 0
             if None in (self.network, self.vocoder, self.bandwidth):
                 ret = HelperFunctions.MessageBox('Missing CMW control vars, will disable CMW remote control.', 'Info', 0x41)
             else:
-                self.cmw.check_connection()
-                if self.cmw.connected:
-                    self.cmw.set_call_config(self.network, self.vocoder, self.bandwidth, self.bitrate)
+                cmwc.check_connection()
+                if cmwc.CMWSettings.connected:
+                    cmwc.set_call_config(self.network, self.vocoder, self.bandwidth, self.bitrate)
                 else:
                     ret = HelperFunctions.MessageBox('CMW connection fail.\nPress YES to continue the test without CMW remote control.\nPress NO to stop the test.', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
             else:
-                save_var(VoiceMeasurementSetting.var_cmw_remo_ctr, self.cmw.connected, const.evsUserDefined)
+                save_var(VoiceMeasurementSetting.var_cmw_remo_ctr, cmwc.CMWSettings.connected, const.evsUserDefined)
 
     def establish_call(self):
         ret = 0
-        if not self.cmw.connected:
+        if not cmwc.CMWSettings.connected:
             ret = HelperFunctions.MessageBox('CMW not connected, check the connection first!\nEstablish the call manually, then start this test.', 'Info', 0x41)
-        elif self.cmw.get_established():
+        elif cmwc.get_established():
             ret = HelperFunctions.MessageBox('Call is still alive, release the call first!', 'Info', 0x41)
-        elif not self.cmw.get_registered():
+        elif not cmwc.get_registered():
             ret = HelperFunctions.MessageBox('Phone is not registered, check the phone connection!', 'Info', 0x41)
         else:
-            self.cmw.init_config()
-            self.cmw.put_mtcall()
+            cmwc.init_config()
+            cmwc.put_mtcall()
             cnt = 0
             if adbpc.connected():
                 # Pickup call via adb
@@ -315,10 +314,10 @@ class VoiceMeasurementHelper():
                     cnt += 1
             else:
                 # Waiting for auto answer
-                while not self.cmw.get_established() and cnt < self.timeout_dut:
+                while not cmwc.get_established() and cnt < self.timeout_dut:
                     time.sleep(1)
                     cnt += 1
-            if not self.cmw.get_established():
+            if not cmwc.get_established():
                 ret = HelperFunctions.MessageBox('Fail to establish the call, check the calling step!', 'Info', 0x41)
             elif 'HH' == self.usecase and self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos):
                 adbpc.input(['tap', self.get_defined_var(VoiceMeasurementSetting.var_dut_hh_pos)])
@@ -394,8 +393,8 @@ class VoiceMeasurementHelper():
         bandwidth_cur = get_var_value('current_bandwidth') if Variables.Exists('current_bandwidth') else ''
         bitrate_cur = get_var_value('current_bitrate') if Variables.Exists('current_bitrate') else ''
         if bandwidth_cur != self.bandwidth or bitrate_cur != self.bitrate:
-            if self.cmw.connected:
-                self.cmw.update_call(self.vocoder, self.bandwidth, self.bitrate)
+            if cmwc.CMWSettings.connected:
+                cmwc.update_call(self.vocoder, self.bandwidth, self.bitrate)
             else:
                 ret = HelperFunctions.MessageBox(f'Set the Bandwidth to {self.bandwidth} and Bitrate to {self.bitrate}.', 'Info', 0x41)
         if 2 == ret:
@@ -426,9 +425,9 @@ class VoiceMeasurementHelper():
             self.establish_call()
         if not Smd.Cancel and Tags.Exists('Number'):
             num = get_tag_values('Number')
-            if self.cmw.connected:
-                ulink = self.cmw.get_delay_net('SND')
-                dlink = self.cmw.get_delay_net('RCV')
+            if cmwc.CMWSettings.connected:
+                ulink = cmwc.get_delay_net('SND')
+                dlink = cmwc.get_delay_net('RCV')
             else:
                 dlink = input_delay_radio_rcv()
                 ulink = input_delay_radio_snd()
@@ -437,32 +436,32 @@ class VoiceMeasurementHelper():
             save_var(f'D_RCV_NET_{ucbw}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
 
     def check_audio_delay(self):
-        if self.cmw.connected:
+        if cmwc.CMWSettings.connected:
             direction = get_tag_values('Direction')
             ucbw = self.usecase+VoiceMeasurementHelper.get_bandwidth(False)[0]
             if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
                 dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
             else:
                 dnet = False
-            dnet_cur = self.cmw.get_delay_net(direction)
+            dnet_cur = cmwc.get_delay_net(direction)
             # If fail to get the net delay, wait 3s and try again
             if not self.check_delay_valid(dnet_cur,dnet):
                 time.sleep(3)
-                dnet_cur = self.cmw.get_delay_net(direction)
+                dnet_cur = cmwc.get_delay_net(direction)
             # Reestablish the call if still fail to get delay or the delay changed too much
             if not self.check_delay_valid(dnet_cur,dnet):
                 self.reestablish_call()
                 time.sleep(3)
-                dnet_cur = self.cmw.get_delay_net(direction)
+                dnet_cur = cmwc.get_delay_net(direction)
             if not self.check_delay_valid(dnet_cur,dnet):
                 self.release_call()
-                self.cmw.signaling_off()
+                cmwc.signaling_off()
                 time.sleep(5)
-                self.cmw.signaling_on()
+                cmwc.signaling_on()
                 time.sleep(5)
                 self.establish_call()
                 time.sleep(3)
-                dnet_cur = self.cmw.get_delay_net(direction)
+                dnet_cur = cmwc.get_delay_net(direction)
             if self.check_delay_valid(dnet_cur,dnet):
                 save_var(f'D_{direction}_NET_{ucbw}', dnet_cur, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
                 # Auto adjust the EQ delay based on the change of NET delay
@@ -493,9 +492,9 @@ class VoiceMeasurementHelper():
             save_var(f'D_{direction}_EQ_{ucbw}_BAK', deq, const.evsMeasured, 'ms', 'Backup data of the original tested delay value.', Smd.Title, True)
 
     def check_call_alive(self):
-        if (adbpc.connected() and '2' not in adbpc.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
+        if (adbpc.connected() and '2' not in adbpc.call_state()) or (cmwc.CMWSettings.connected and not cmwc.get_established()):
             self.establish_call()
-        if (adbpc.connected() and '2' not in adbpc.call_state()) or (self.cmw.connected and not self.cmw.get_established()):
+        if (adbpc.connected() and '2' not in adbpc.call_state()) or (cmwc.CMWSettings.connected and not cmwc.get_established()):
             ret = HelperFunctions.MessageBox('Call is not alive and auto connection fail.\nCheck the call connection first!', 'Info', 0x41)
             if 2 == ret:
                 Smd.Cancel = True
