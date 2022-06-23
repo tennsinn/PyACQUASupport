@@ -7,14 +7,14 @@ from HSL.MeasurementHandlings.Delay import set_d_script
 from HEAD import const
 
 import VoiceMeasurementSetting as vms
-from VoiceMeasurementHelper import VoiceMeasurementHelper
+import VoiceMeasurementHelper as vmh
 
 # Run before each measurement
 def before_each_measurement():
     vms.check_global_var()
     if 'VoIP' == get_var_value(vms.var_call_net):
         save_var(vms.var_cmw_remo_ctr, False, const.evsUserDefined)
-    vmh = VoiceMeasurementHelper()
+    vmh.VoiceMeasurementConfig.update_config()
     set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
     if 'VoIP' != get_var_value(vms.var_call_net):
         # Check call alive or establish call
@@ -52,11 +52,11 @@ def after_each_measurement():
         if 'charging' in act:
             ret = HelperFunctions.MessageBox('Stop charging the phone.', 'Info', 0x41)
         if 'backup_delay' in act:
-            VoiceMeasurementHelper.backup_delay()
+            vmh.backup_delay()
         if 2 == ret:
             Smd.Cancel = True
     if 'loop' == get_var_value(vms.var_seq_test_mode):
-        Smd.ResultComment = get_var_value(vms.var_call_net)+'_'+get_var_value(vms.var_call_vc)+'_'+VoiceMeasurementHelper.get_bandwidth()
+        Smd.ResultComment = get_var_value(vms.var_call_net)+'_'+get_var_value(vms.var_call_vc)+'_'+vmh.get_bandwidth()
 
 # Run after canceled measurement
 def after_canceled_measurement():
@@ -69,4 +69,4 @@ def after_canceled_measurement():
     if Variables.Exists('current_bitrate'):
         delete_vars('current_bitrate')
     if Tags.Exists('BGNScenario'):
-        VoiceMeasurementHelper.stop_bgn_play()
+        vmh.stop_bgn_play()
