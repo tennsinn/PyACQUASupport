@@ -9,8 +9,8 @@ from HSL.MeasurementHandlings.BGN.BGNConfigurator import BGNConfigurator
 from HEAD import const
 
 import ADBPhoneControl as adbpc
-import CMWController as cmwc
-import VoiceMeasurementSetting as vms
+import ACQUASupport.CMWController as cmwc
+import ACQUASupport.VoiceMeasurementSetting as vms
 
 class VoiceMeasurementConfig():
     timeout_dut = 5

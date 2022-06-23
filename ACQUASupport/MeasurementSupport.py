@@ -1,13 +1,11 @@
-import time
-
 from ACQUAlyzer import Tags, Variables, HelperFunctions, Smd
 from HSL.HelperTools.AcquaVariables import get_var_value, save_var, delete_vars
 from HSL.HelperTools.SMDTags import get_tag_values
 from HSL.MeasurementHandlings.Delay import set_d_script
 from HEAD import const
 
-import VoiceMeasurementSetting as vms
-import VoiceMeasurementHelper as vmh
+import ACQUASupport.VoiceMeasurementSetting as vms
+import ACQUASupport.VoiceMeasurementHelper as vmh
 
 # Run before each measurement
 def before_each_measurement():
