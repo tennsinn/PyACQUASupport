@@ -160,23 +160,30 @@ class CMWController():
                 self.interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:COMMon:BITRate:RANGe {str_bitrate}, {str_bitrate}')
             self.interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:PERForm')
 
-    def signling_on(self, err=True):
-        state = False
+    def _signaling(self, state='ON', err=True):
+        if state not in ['ON','OFF']:
+            raise Exception('Invalid signaling state!')
         cnt = 0
         net = {'GSM':'GSM', 'WCDMA':'WCDMa', 'LTE':'LTE'}
-        while not state and cnt < 60:
+        while cnt < 60:
             time.sleep(1)
             cnt += 1
             ret = self.interface.QueryCommand(f'SOURce:{net[self.network]}:SIGN1:CELL:STATe:ALL?')
             ret = ret.split(',')
-            if 'ON' not in ret:
-                self.interface.WriteCommand(f'SOURce:{net[self.network]}:SIGN1:CELL:STATe ON')
-            elif 'ADJ' in ret:
-                state = True
-        if err and not state:
-            raise Exception('Enable signaling failure!')
+            if state != ret[0]:
+                self.interface.WriteCommand(f'SOURce:{net[self.network]}:SIGN1:CELL:STATe {state}')
+            elif 'ADJ' == ret[1]:
+                return True
+        if err:
+            raise Exception(f'Failed to change the signaling state to {state}!')
         else:
-            return state
+            return False
+
+    def signaling_on(self):
+        self._signaling('ON')
+
+    def signaling_off(self):
+        self._signaling('OFF')
 
     def init_config(self):
         str_adcodec = self.adcodecs[self.key]
@@ -261,4 +268,4 @@ class CMWController():
             self.interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:CMR ENABle')
             self.interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:CHAWmode DIS')
             self.interface.WriteCommand('SOURce:LTE:SIGN1:CELL:STATe ON')
-        self.signling_on()
+        self.signaling_on()

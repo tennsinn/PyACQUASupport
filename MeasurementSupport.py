@@ -436,28 +436,34 @@ class VoiceMeasurementHelper():
             save_var(f'D_SND_NET_{ucbw}_{num}', ulink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
             save_var(f'D_RCV_NET_{ucbw}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
 
-    def check_audio_delay(self, err=False):
+    def check_audio_delay(self):
         if self.cmw.connected:
             direction = get_tag_values('Direction')
+            ucbw = self.usecase+VoiceMeasurementHelper.get_bandwidth(False)[0]
+            if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
+                dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
+            else:
+                dnet = False
             dnet_cur = self.cmw.get_delay_net(direction)
-            # If fail, wait for 3s and try again
-            if not dnet_cur:
+            # If fail to get the net delay, wait 3s and try again
+            if not self.check_delay_valid(dnet_cur,dnet):
                 time.sleep(3)
                 dnet_cur = self.cmw.get_delay_net(direction)
-            # If fail, re-establisheh the call and try again
-            if not dnet_cur:
+            # Reestablish the call if still fail to get delay or the delay changed too much
+            if not self.check_delay_valid(dnet_cur,dnet):
                 self.reestablish_call()
                 time.sleep(3)
                 dnet_cur = self.cmw.get_delay_net(direction)
-            if dnet_cur:
-                ucbw = self.usecase+VoiceMeasurementHelper.get_bandwidth(False)[0]
-                if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
-                    dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
-                else:
-                    dnet = dnet_cur
-                # Warning if the delay changed too much
-                if err and (dnet > 800 or dnet < 0 or abs(dnet-dnet_cur) > 200):
-                    raise Exception('Audio delay change too much, please retest the overall delay!')
+            if not self.check_delay_valid(dnet_cur,dnet):
+                self.release_call()
+                self.cmw.signaling_off()
+                time.sleep(5)
+                self.cmw.signaling_on()
+                time.sleep(5)
+                self.establish_call()
+                time.sleep(3)
+                dnet_cur = self.cmw.get_delay_net(direction)
+            if self.check_delay_valid(dnet_cur,dnet):
                 save_var(f'D_{direction}_NET_{ucbw}', dnet_cur, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
                 # Auto adjust the EQ delay based on the change of NET delay
                 if Variables.Exists(f'D_{direction}_EQ_{ucbw}'):
@@ -468,6 +474,15 @@ class VoiceMeasurementHelper():
                     save_var(f'D_{direction}_EQ_{ucbw}', deq_cur, const.evsMeasured, 'ms', 'Adjusted value based on the change of net delay.', Smd.Title, True)
             else:
                 raise Exception('Fail to get audio delay, please check the connection!')
+
+    def check_delay_valid(self, dnet_cur, dnet=False):
+        if not dnet_cur:
+            return False
+        if dnet_cur > 800 or dnet_cur < 0:
+            return False
+        if dnet and abs(dnet-dnet_cur) > 200:
+            return False
+        return True
 
     @staticmethod
     def backup_delay():
