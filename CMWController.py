@@ -1,6 +1,14 @@
 import time
 from HEAD.RadiotesterRemoteControl.CMWRemoteControlCommon import *
 
+def get_default_bitrate(network, vocoder, bandwidth):
+    if 'EVS' == vocoder:
+        return '13.2kbps'
+    elif 'NB' == bandwidth:
+        return '12.2kbps'
+    else:
+        return '12.65kbps'
+
 class CMWController():
     def __init__(self):
         self.interface = CMWPythonInterface()
@@ -21,15 +29,6 @@ class CMWController():
         self.vocoder = None
         self.bandwidth = None
         self.bitrate = None
-
-    @staticmethod
-    def get_default_bitrate(network, vocoder, bandwidth):
-        if 'EVS' == vocoder:
-            return '13.2kbps'
-        elif 'NB' == bandwidth:
-            return '12.2kbps'
-        else:
-            return '12.65kbps'
 
     def set_call_config(self, network, vocoder, bandwidth, bitrate=None):
         if network in ['GSM', 'WCDMA', 'LTE']:

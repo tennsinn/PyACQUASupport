@@ -11,7 +11,7 @@ from HSL.MeasurementHandlings.BGN.BGNConfigurator import BGNConfigurator
 from HEAD import const
 
 import ADBPhoneControl as adbpc
-from CMWController import *
+from CMWController import CMWController, get_default_bitrate
 
 class VoiceMeasurementSetting():
     # Defination of variable names
@@ -260,7 +260,7 @@ class VoiceMeasurementHelper():
             network = VoiceMeasurementHelper.get_network()
             vocoder = VoiceMeasurementHelper.get_vocoder()
             bandwidth = VoiceMeasurementHelper.get_bandwidth()
-            bitrate = CMWController.get_default_bitrate(network, vocoder, bandwidth)
+            bitrate = get_default_bitrate(network, vocoder, bandwidth)
         return bitrate
 
     def init_adb(self, sn=None):
