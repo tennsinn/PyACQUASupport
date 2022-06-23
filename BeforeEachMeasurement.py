@@ -1,4 +1,4 @@
-from MeasurementSupport import *
+from ACQUASupport import before_each_measurement
 
 if __name__ == '__main__':
-    MeasurementSupport.before_each_measurement()
+    before_each_measurement()
