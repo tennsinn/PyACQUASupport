@@ -12,7 +12,6 @@ def before_each_measurement():
     vms.check_global_var()
     if 'VoIP' == get_var_value(vms.var_call_net):
         save_var(vms.var_cmw_remo_ctr, False, const.evsUserDefined)
-    vmh.VoiceMeasurementConfig.update_config()
     vmh.init_adb()
     vmh.init_cmw()
     set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
@@ -29,7 +28,7 @@ def before_each_measurement():
     if not Smd.Cancel and Tags.Exists('VolumeCTRL'):
         vmh.set_volume()
     # Check apllication force
-    if not Smd.Cancel and 'HA' == vmh.VoiceMeasurementConfig.usecase:
+    if not Smd.Cancel and 'HA' == vmh.CallConfig.usecase:
         vmh.set_force()
     if not Smd.Cancel and Tags.Exists('BGNScenario'):
         vmh.set_bgn_setup()

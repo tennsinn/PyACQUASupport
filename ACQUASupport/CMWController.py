@@ -1,16 +1,6 @@
 import time
 from HEAD.RadiotesterRemoteControl.CMWRemoteControlCommon import CMWPythonInterface as interface
-
-class CMWSettings():
-    network = None
-    vocoder = None
-    bandwidth = None
-    bitrate = None
-    connected = False
-
-    @classmethod
-    def key(cls):
-        return f'{cls.network}_{cls.vocoder}_{cls.bandwidth}'
+import VoiceMeasurementHelper as vmh
 
 cmw_bitrates = {
     'GSM_AMR_NB':{'12.2kbps':'C1220','10.2kbps':'C1020','7.95kbps':'C0795','7.4kbps':'C0740','6.7kbps':'C0670','5.9kbps':'C0590','5.15kbps':'C0515','4.75kbps':'C0475'},
@@ -28,52 +18,52 @@ cmw_adcodecs = {'GSM_AMR_NB':'ANFG', 'GSM_AMR_WB':'AWF8', 'WCDMA_AMR_NB':'NARRow
     'LTE_AMR_NB':'NARRowband', 'LTE_AMR_WB':'WIDeband', 'LTE_EVS_NB':'EVS', 'LTE_EVS_WB':'EVS', 'LTE_EVS_SWB':'EVS'}
 
 def use_default_bitrate():
-    if 'EVS' == CMWSettings.vocoder:
-        CMWSettings.bitrate = '13.2kbps'
-    elif 'NB' == CMWSettings.bandwidth:
-        CMWSettings.bitrate = '12.2kbps'
+    if 'EVS' == vmh.CallConfig.vocoder:
+        vmh.CallConfig.bitrate = '13.2kbps'
+    elif 'NB' == vmh.CallConfig.bandwidth:
+        vmh.CallConfig.bitrate = '12.2kbps'
     else:
-        CMWSettings.bitrate = '12.65kbps'
-    return CMWSettings.bitrate
+        vmh.CallConfig.bitrate = '12.65kbps'
+    return vmh.CallConfig.bitrate
 
 def check_connection():
     try:
         interface.Connect()
-        CMWSettings.connected = True
+        vmh.CallConfig.cmw_connected = True
     except:
-        CMWSettings.connected = False
-    return CMWSettings.connected
+        vmh.CallConfig.cmw_connected = False
+    return vmh.CallConfig.cmw_connected
 
 def set_call_config(network, vocoder, bandwidth, bitrate=None):
     if network in ['GSM', 'WCDMA', 'LTE']:
-        CMWSettings.network = network
+        vmh.CallConfig.network = network
     else:
         raise Exception('Do not support the selected network!')
-    if 'AMR' == vocoder or ('LTE' == CMWSettings.network and 'EVS' == vocoder):
-        CMWSettings.vocoder = vocoder
+    if 'AMR' == vocoder or ('LTE' == vmh.CallConfig.network and 'EVS' == vocoder):
+        vmh.CallConfig.vocoder = vocoder
     else:
         raise Exception('Do not support the selected vocoder!')
-    if ('AMR' == CMWSettings.vocoder and bandwidth in ['NB','WB']) or ('EVS' == CMWSettings.vocoder and bandwidth in ['NB','WB','SWB']):
-        CMWSettings.bandwidth = bandwidth
+    if ('AMR' == vmh.CallConfig.vocoder and bandwidth in ['NB','WB']) or ('EVS' == vmh.CallConfig.vocoder and bandwidth in ['NB','WB','SWB']):
+        vmh.CallConfig.bandwidth = bandwidth
     else:
         raise Exception('Do not support the selected bandwidth!')
     if None == bitrate:
-        CMWSettings.bitrate = use_default_bitrate()
-    elif bitrate in cmw_bitrates[CMWSettings.key()]:
-        CMWSettings.bitrate = bitrate
+        vmh.CallConfig.bitrate = use_default_bitrate()
+    elif bitrate in cmw_bitrates[vmh.CallConfig.key()]:
+        vmh.CallConfig.bitrate = bitrate
     else:
         raise Exception('Do not support the selected bitrate!')
 
 def get_delay_net(direction):
     val = False
-    if 'GSM' == CMWSettings.network or 'WCDMA' == CMWSettings.network:
-        delay = interface.QueryCommand(f'SENSe:{CMWSettings.network}:SIGN1:CVINfo?')
+    if 'GSM' == vmh.CallConfig.network or 'WCDMA' == vmh.CallConfig.network:
+        delay = interface.QueryCommand(f'SENSe:{vmh.CallConfig.network}:SIGN1:CVINfo?')
         delay = delay.split(',')
         if 'SND' == direction and 'INV' != delay[2]:
             val = eval(delay[2])*1000
         elif 'RCV' == direction and 'INV' != delay[1]:
             val = eval(delay[1])*1000
-    elif 'LTE' == CMWSettings.network or '5GNR' == CMWSettings.network or 'WLAN' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network or '5GNR' == vmh.CallConfig.network or 'WLAN' == vmh.CallConfig.network:
         if 'SND' == direction:
             delay = interface.QueryCommand('READ:DATA:MEAS1:ADElay:ULINK?')
         else:
@@ -85,7 +75,7 @@ def get_delay_net(direction):
 
 def get_delay_tau():
     tau = False
-    if 'LTE' == CMWSettings.network or '5GNR' == CMWSettings.network or 'WLAN' == CMWSettings.network:
+    if 'LTE' == vmh.CallConfig.network or '5GNR' == vmh.CallConfig.network or 'WLAN' == vmh.CallConfig.network:
         tau = interface.QueryCommand('READ:DATA:MEAS1:ADElay:TAULink?')
         tau = tau.split(',')
         if 'INV' != tau[1]:
@@ -94,15 +84,15 @@ def get_delay_tau():
 
 def get_registered():
     registered = False
-    if 'GSM' == CMWSettings.network:
+    if 'GSM' == vmh.CallConfig.network:
         ret = interface.QueryCommand('FETCh:GSM:SIGN1:CSWitched:STATe?')
         if 'SYNC' == ret:
             registered = True
-    if 'WCDMA' == CMWSettings.network:
+    if 'WCDMA' == vmh.CallConfig.network:
         ret = interface.QueryCommand('FETCh:WCDMa:SIGN1:CSWitched:STATe?')
         if 'REG' == ret:
             registered = True
-    elif 'LTE' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network:
         ret = interface.QueryCommand('SOURce:LTE:SIGN:CELL:STATe:ALL?')
         if ret == 'ON,ADJ':
             ret = interface.QueryCommand('FETCh:LTE:SIGN:PSWitched:STATe?')
@@ -114,43 +104,43 @@ def get_registered():
 
 def get_established():
     established = False
-    if 'GSM' == CMWSettings.network or 'WCDMA' == CMWSettings.network:
-        ret = interface.QueryCommand(f'FETCh:{CMWSettings.network}:SIGN1:CSWitched:STATe?')
+    if 'GSM' == vmh.CallConfig.network or 'WCDMA' == vmh.CallConfig.network:
+        ret = interface.QueryCommand(f'FETCh:{vmh.CallConfig.network}:SIGN1:CSWitched:STATe?')
         if 'CEST' == ret:
             established = True
-    elif 'LTE' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network:
         ret = interface.QueryCommand('SENse:DATA:CONTrol:IMS2:RELease:LIST?')
         if ret != '':
             established = True
     return established
 
 def put_mtcall():
-    if 'GSM' == CMWSettings.network:
+    if 'GSM' == vmh.CallConfig.network:
         interface.WriteCommand('CALL:GSM:SIGN1:CSWitched:ACTion CONNect')
-    elif 'WCDMA' == CMWSettings.network:
+    elif 'WCDMA' == vmh.CallConfig.network:
         interface.WriteCommand('CALL:WCDMa:SIGN1:CSWitched:ACTion CONNect')
-    elif 'LTE' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network:
         id = interface.QueryCommand('SENSe:DATA:CONTrol:IMS2:VIRTualsub1:MTCall:DESTination:LIST?').split(',')[0]
         interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:MTCall:DESTination {id}')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:MTCall:TYPE AUDio')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:MTCall:CALL')
 
 def update_call(vocoder, bandwidth, bitrate):
-    set_call_config(CMWSettings.network, vocoder, bandwidth, bitrate)
-    str_bitrate = cmw_bitrates[CMWSettings.key()][bitrate]
-    str_adcodec = cmw_adcodecs[CMWSettings.key()]
-    if 'GSM' == CMWSettings.network:
+    set_call_config(vmh.CallConfig.network, vocoder, bandwidth, bitrate)
+    str_bitrate = cmw_bitrates[vmh.CallConfig.key()][bitrate]
+    str_adcodec = cmw_adcodecs[vmh.CallConfig.key()]
+    if 'GSM' == vmh.CallConfig.network:
         interface.WriteCommand('CALL:GSM:SIGN1:PSWitched:ACTion DISConnect')
         interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:TMODe {str_adcodec}')
-    elif 'WCDMA' == CMWSettings.network:
+    elif 'WCDMA' == vmh.CallConfig.network:
         interface.WriteCommand(f'CONFigure:WCDMa:SIGN1:CONNection:VOICe:CODec {bandwidth}')
         interface.WriteCommand(f'CONFigure:WCDMa:SIGN1:CONNection:VOICe:AMR:{str_adcodec} {str_bitrate}')
-    elif 'LTE' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network:
         id = interface.QueryCommand('SENse:DATA:CONTrol:IMS2:RELease:LIST?').split(',')[0]
         interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:CALL:ID {id}')
         interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:ADCodec:TYPE {str_adcodec}')
         if 'AMR' == vocoder:
-            for br_key, br_val in cmw_bitrates[CMWSettings.key()].items():
+            for br_key, br_val in cmw_bitrates[vmh.CallConfig.key()].items():
                 if br_key == bitrate:
                     interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:AMR:CODec{br_val}:ENABle ON')
                 else:
@@ -168,10 +158,10 @@ def _signaling(state='ON', err=True):
     while cnt < 60:
         time.sleep(1)
         cnt += 1
-        ret = interface.QueryCommand(f'SOURce:{net[CMWSettings.network]}:SIGN1:CELL:STATe:ALL?')
+        ret = interface.QueryCommand(f'SOURce:{net[vmh.CallConfig.network]}:SIGN1:CELL:STATe:ALL?')
         ret = ret.split(',')
         if state != ret[0]:
-            interface.WriteCommand(f'SOURce:{net[CMWSettings.network]}:SIGN1:CELL:STATe {state}')
+            interface.WriteCommand(f'SOURce:{net[vmh.CallConfig.network]}:SIGN1:CELL:STATe {state}')
         elif 'ADJ' == ret[1]:
             return True
     if err:
@@ -186,24 +176,24 @@ def signaling_off():
     _signaling('OFF')
 
 def init_config():
-    str_adcodec = cmw_adcodecs[CMWSettings.key()]
-    str_bitrate = cmw_bitrates[CMWSettings.key()][CMWSettings.bitrate]
+    str_adcodec = cmw_adcodecs[vmh.CallConfig.key()]
+    str_bitrate = cmw_bitrates[vmh.CallConfig.key()][vmh.CallConfig.bitrate]
     interface.WriteCommand('CONFigure:AUDio:SPEech1:ANALog:ILEVel 1.572')
     interface.WriteCommand('CONFigure:AUDio:SPEech1:ANALog:OLEVel 1.572')
     interface.WriteCommand('CONFigure:AUDio:SPEech1:ANALog:FILTer:HPASs H6')
-    if 'GSM' == CMWSettings.network:
+    if 'GSM' == vmh.CallConfig.network:
         interface.WriteCommand('SOURce:WCDMa:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('SOURce:LTE:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('ROUTe:AUDio1:SCENario:EASPeech "GSM Sig1"')
         interface.WriteCommand('CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:SIGNaling:MODE LTRR')
         rate_conf = {'NB':'GMSK', 'WB':'EPSK'}
         rate_conf2 = {'NB':{'C1220':'4', 'C0795':'3', 'C0590':'2', 'C0475':'1'}, 'WB':{'C2385':'4', 'C1585':'3', 'C1265':'2', 'C0660':'1'}}
-        str_rate_conf = ', '.join(rate_conf2[CMWSettings.bandwidth].keys())
-        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:RSET:{CMWSettings.bandwidth}:FRATe:{rate_conf[CMWSettings.bandwidth]} {str_rate_conf}')
-        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:CMODe:{CMWSettings.bandwidth}:FRATe:{rate_conf[CMWSettings.bandwidth]}:DL {rate_conf2[CMWSettings.bandwidth][str_bitrate]}')
-        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:CMODe:{CMWSettings.bandwidth}:FRATe:{rate_conf[CMWSettings.bandwidth]}:UL {rate_conf2[CMWSettings.bandwidth][str_bitrate]}')
+        str_rate_conf = ', '.join(rate_conf2[vmh.CallConfig.bandwidth].keys())
+        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:RSET:{vmh.CallConfig.bandwidth}:FRATe:{rate_conf[vmh.CallConfig.bandwidth]} {str_rate_conf}')
+        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:CMODe:{vmh.CallConfig.bandwidth}:FRATe:{rate_conf[vmh.CallConfig.bandwidth]}:DL {rate_conf2[vmh.CallConfig.bandwidth][str_bitrate]}')
+        interface.WriteCommand(f'CONFigure:GSM:SIGN1:CONNection:CSWitched:AMR:CMODe:{vmh.CallConfig.bandwidth}:FRATe:{rate_conf[vmh.CallConfig.bandwidth]}:UL {rate_conf2[vmh.CallConfig.bandwidth][str_bitrate]}')
         interface.WriteCommand('SOURce:GSM:SIGN1:CELL:STATe ON')
-    elif 'WCDMA' == CMWSettings.network:
+    elif 'WCDMA' == vmh.CallConfig.network:
         interface.WriteCommand('SOURce:GSM:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('SOURce:LTE:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('ROUTe:AUDio1:SCENario:EASPeech "WCDMA Sig1"')
@@ -212,11 +202,11 @@ def init_config():
         interface.WriteCommand('CONFigure:WCDMa:SIGN1:CONNection:CSWitched:CRELease NORMal')
         interface.WriteCommand('CONFigure:WCDMa:SIGN1:CONNection:VOICe:SOURce SPEech')
         interface.WriteCommand('CONFigure:WCDMa:SIGN1:CONNection:VOICe:DTX OFF')
-        interface.WriteCommand(f'CONFigure:WCDMa:SIGN1:CONNection:VOICe:CODec {CMWSettings.bandwidth}')
+        interface.WriteCommand(f'CONFigure:WCDMa:SIGN1:CONNection:VOICe:CODec {vmh.CallConfig.bandwidth}')
         interface.WriteCommand(f'CONFigure:WCDMa:SIGN1:CONNection:VOICe:AMR:{str_adcodec} {str_bitrate}')
         interface.WriteCommand('CONFigure:WCDMa:SIGN1:CONNection:VOICe:TFCI OFF')
         interface.WriteCommand('SOURce:WCDMa:SIGN1:CELL:STATe ON')
-    elif 'LTE' == CMWSettings.network:
+    elif 'LTE' == vmh.CallConfig.network:
         interface.WriteCommand('SOURce:GSM:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('SOURce:WCDMa:SIGN1:CELL:STATe OFF')
         interface.WriteCommand('ROUTe:AUDio1:SCENario:EASPeech "DAU IMS Server"')
@@ -232,10 +222,10 @@ def init_config():
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:SUPPorted:FEATures:FILetransfer ON')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:FORCemocall ON')
         interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:ADCodec:TYPE {str_adcodec}')
-        if 'AMR' == CMWSettings.vocoder:
+        if 'AMR' == vmh.CallConfig.vocoder:
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:AMR:ALIGnment OCTetaligned')
-            for br_key, br_val in cmw_bitrates[CMWSettings.key()].items():
-                if br_key == CMWSettings.bitrate:
+            for br_key, br_val in cmw_bitrates[vmh.CallConfig.key()].items():
+                if br_key == vmh.CallConfig.bitrate:
                     interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:AMR:CODec{br_val}:ENABle ON')
                 else:
                     interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:AMR:CODec{br_val}:ENABle OFF')
@@ -245,7 +235,7 @@ def init_config():
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:DTX DISable')
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:DTXRecv NP')
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:SYNCh:SELect COMMon')
-            interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:BWCommon {CMWSettings.bandwidth}')
+            interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:BWCommon {vmh.CallConfig.bandwidth}')
             interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:COMMon:BITRate:RANGe {str_bitrate}, {str_bitrate}')
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:CMR ENABle')
             interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:VIRTualsub1:EVS:CHAWmode DIS')
@@ -263,7 +253,7 @@ def init_config():
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:DTX DISable')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:DTXRecv NP')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:SYNCh:SELect COMMon')
-        interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:BWCommon {CMWSettings.bandwidth}')
+        interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:BWCommon {vmh.CallConfig.bandwidth}')
         interface.WriteCommand(f'CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:COMMon:BITRate:RANGe {str_bitrate}, {str_bitrate}')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:CMR ENABle')
         interface.WriteCommand('CONFigure:DATA:CONTrol:IMS2:UPDate:EVS:CHAWmode DIS')

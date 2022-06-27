@@ -12,7 +12,7 @@ import ADBPhoneControl as adbpc
 import ACQUASupport.CMWController as cmwc
 import ACQUASupport.VoiceMeasurementSetting as vms
 
-class VoiceMeasurementConfig():
+class CallConfig():
     timeout_dut = 5
     scenario = None
     usecase = None
@@ -20,6 +20,7 @@ class VoiceMeasurementConfig():
     vocoder = None
     bandwidth = None
     bitrate = None
+    cmw_connected = False
 
     @classmethod
     def update_config(cls):
@@ -29,6 +30,10 @@ class VoiceMeasurementConfig():
         cls.vocoder = get_vocoder()
         cls.bandwidth = get_bandwidth()
         cls.bitrate = get_bitrate()
+
+    @classmethod
+    def key(cls):
+        return f'{cls.network}_{cls.vocoder}_{cls.bandwidth}'
 
 def get_scenario():
     scenario = {'HA':'earpiece', 'HE':'headset', 'HH':'speaker', 'BT':'bt_a2dp'}
@@ -156,15 +161,16 @@ def init_adb():
                 save_var(vms.var_dut_remo_ctr, adbpc.connected(), const.evsUserDefined)
 
 def init_cmw():
+    CallConfig.update_config()
     # Check CMW Remote Control
     if not Smd.Cancel and get_defined_var(vms.var_cmw_remo_ctr):
         ret = 0
-        if None in (VoiceMeasurementConfig.network, VoiceMeasurementConfig.vocoder, VoiceMeasurementConfig.bandwidth):
+        if None in (CallConfig.network, CallConfig.vocoder, CallConfig.bandwidth):
             ret = HelperFunctions.MessageBox('Missing CMW control vars, will disable CMW remote control.', 'Info', 0x41)
         else:
             cmwc.check_connection()
             if cmwc.CMWSettings.connected:
-                cmwc.set_call_config(VoiceMeasurementConfig.network, VoiceMeasurementConfig.vocoder, VoiceMeasurementConfig.bandwidth, VoiceMeasurementConfig.bitrate)
+                cmwc.set_call_config(CallConfig.network, CallConfig.vocoder, CallConfig.bandwidth, CallConfig.bitrate)
             else:
                 ret = HelperFunctions.MessageBox('CMW connection fail.\nPress YES to continue the test without CMW remote control.\nPress NO to stop the test.', 'Info', 0x41)
         if 2 == ret:
@@ -199,8 +205,8 @@ def set_volume():
     vol_cur = get_var_value('current_volume') if Variables.Exists('current_volume') else ''
     if vol_cur != vol:
         if adbpc.connected():
-            minvol, maxvol, nomvol = get_volume_range(VoiceMeasurementConfig.usecase, VoiceMeasurementConfig.bandwidth)
-            adbpc.set_vol_by_key('voice', get_scenario()[VoiceMeasurementConfig.usecase], vol, minvol, maxvol, nomvol)
+            minvol, maxvol, nomvol = get_volume_range(CallConfig.usecase, CallConfig.bandwidth)
+            adbpc.set_vol_by_key('voice', get_scenario()[CallConfig.usecase], vol, minvol, maxvol, nomvol)
         else:
             ret = HelperFunctions.MessageBox('Set the Volume to '+vol, 'Info', 0x41)
     if 2 == ret:
@@ -230,46 +236,46 @@ def establish_call():
         cnt = 0
         if adbpc.connected():
             # Pickup call via adb
-            while adbpc.CallState.INCALL not in adbpc.call_state() and cnt < VoiceMeasurementConfig.timeout_dut:
+            while adbpc.CallState.INCALL not in adbpc.call_state() and cnt < CallConfig.timeout_dut:
                 if adbpc.CallState.RING in adbpc.call_state():
                     adbpc.key_call()
                 time.sleep(1)
                 cnt += 1
         else:
             # Waiting for auto answer
-            while not cmwc.get_established() and cnt < VoiceMeasurementConfig.timeout_dut:
+            while not cmwc.get_established() and cnt < CallConfig.timeout_dut:
                 time.sleep(1)
                 cnt += 1
         if not cmwc.get_established():
             ret = HelperFunctions.MessageBox('Fail to establish the call, check the calling step!', 'Info', 0x41)
-        elif 'HH' == VoiceMeasurementConfig.usecase and get_defined_var(vms.var_dut_hh_pos):
+        elif 'HH' == CallConfig.usecase and get_defined_var(vms.var_dut_hh_pos):
             adbpc.input(['tap', get_defined_var(vms.var_dut_hh_pos)])
     if 2 == ret:
         Smd.Cancel = True
     else:
-        save_var('current_bandwidth', VoiceMeasurementConfig.bandwidth, const.evsUserDefined)
-        save_var('current_bitrate', VoiceMeasurementConfig.bitrate, const.evsUserDefined)
+        save_var('current_bandwidth', CallConfig.bandwidth, const.evsUserDefined)
+        save_var('current_bitrate', CallConfig.bitrate, const.evsUserDefined)
 
 def update_call():
     ret = 0
     bandwidth_cur = get_var_value('current_bandwidth') if Variables.Exists('current_bandwidth') else ''
     bitrate_cur = get_var_value('current_bitrate') if Variables.Exists('current_bitrate') else ''
-    if bandwidth_cur != VoiceMeasurementConfig.bandwidth or bitrate_cur != VoiceMeasurementConfig.bitrate:
+    if bandwidth_cur != CallConfig.bandwidth or bitrate_cur != CallConfig.bitrate:
         if cmwc.CMWSettings.connected:
-            cmwc.update_call(VoiceMeasurementConfig.vocoder, VoiceMeasurementConfig.bandwidth, VoiceMeasurementConfig.bitrate)
+            cmwc.update_call(CallConfig.vocoder, CallConfig.bandwidth, CallConfig.bitrate)
         else:
-            ret = HelperFunctions.MessageBox(f'Set the Bandwidth to {VoiceMeasurementConfig.bandwidth} and Bitrate to {VoiceMeasurementConfig.bitrate}.', 'Info', 0x41)
+            ret = HelperFunctions.MessageBox(f'Set the Bandwidth to {CallConfig.bandwidth} and Bitrate to {CallConfig.bitrate}.', 'Info', 0x41)
     if 2 == ret:
         Smd.Cancel = True
     else:
-        save_var('current_bandwidth', VoiceMeasurementConfig.bandwidth, const.evsUserDefined)
-        save_var('current_bitrate', VoiceMeasurementConfig.bitrate, const.evsUserDefined)
+        save_var('current_bandwidth', CallConfig.bandwidth, const.evsUserDefined)
+        save_var('current_bitrate', CallConfig.bitrate, const.evsUserDefined)
 
 def release_call():
     ret = 0
     if adbpc.connected():
         cnt = 0
-        while adbpc.CallState.INCALL in adbpc.call_state() and cnt < VoiceMeasurementConfig.timeout_dut:
+        while adbpc.CallState.INCALL in adbpc.call_state() and cnt < CallConfig.timeout_dut:
             adbpc.key_endcall()
             time.sleep(1)
             cnt += 1
@@ -293,14 +299,14 @@ def reestablish_call():
         else:
             dlink = input_delay_radio_rcv()
             ulink = input_delay_radio_snd()
-        ucbw = VoiceMeasurementConfig.usecase+get_bandwidth(False)
+        ucbw = CallConfig.usecase+get_bandwidth(False)
         save_var(f'D_SND_NET_{ucbw}_{num}', ulink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
         save_var(f'D_RCV_NET_{ucbw}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
 
 def check_audio_delay():
     if cmwc.CMWSettings.connected:
         direction = get_tag_values('Direction')
-        ucbw = VoiceMeasurementConfig.usecase+get_bandwidth(False)[0]
+        ucbw = CallConfig.usecase+get_bandwidth(False)[0]
         if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
             dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
         else:
