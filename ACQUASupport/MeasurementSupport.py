@@ -6,6 +6,7 @@ from HEAD import const
 
 import ACQUASupport.VoiceMeasurementSetting as vms
 import ACQUASupport.VoiceMeasurementHelper as vmh
+import ACQUASupport.BGNController as bgnc
 
 # Run before each measurement
 def before_each_measurement():
@@ -31,7 +32,7 @@ def before_each_measurement():
     if not Smd.Cancel and 'HA' == vmh.CallConfig.usecase:
         vmh.set_force()
     if not Smd.Cancel and Tags.Exists('BGNScenario'):
-        vmh.set_bgn_setup()
+        bgnc.set_bgn_setup()
     # Apply defined action
     if not Smd.Cancel and Tags.Exists('Action'):
         ret = 0
@@ -68,4 +69,4 @@ def after_canceled_measurement():
     if Variables.Exists('current_bitrate'):
         delete_vars('current_bitrate')
     if Tags.Exists('BGNScenario'):
-        vmh.stop_bgn_play()
+        bgnc.stop_bgn_play()
