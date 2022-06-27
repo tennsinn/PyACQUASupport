@@ -1,6 +1,8 @@
 import time
+
 from HEAD.RadiotesterRemoteControl.CMWRemoteControlCommon import CMWPythonInterface as interface
-import VoiceMeasurementHelper as vmh
+
+import ACQUASupport.VoiceMeasurementHelper as vmh
 
 cmw_bitrates = {
     'GSM_AMR_NB':{'12.2kbps':'C1220','10.2kbps':'C1020','7.95kbps':'C0795','7.4kbps':'C0740','6.7kbps':'C0670','5.9kbps':'C0590','5.15kbps':'C0515','4.75kbps':'C0475'},
