@@ -18,8 +18,6 @@ BGNTags = {'bgn_scenario': 'BGNScenario',
            'loops': 'BGNRepeats',
            'gain': 'BGNGain',
            'use_case': 'UseCase'}
-# Provide BGN Mapping for AUTO mode
-bgn_map_file = str(Path(SubProject.Path) / 'BGNMapping.xlsx')
 
 def check_LabBGN_conn():
     remote_control = RemoteControlHAE(auto_connect=False)
@@ -50,10 +48,12 @@ def set_bgn_setup():
     else:
         save_var('BGNSetup', get_var_value(vms.var_sys_bgnset_audio), const.evsUserDefined, '', 'Setup for loaded noise.', Smd.Title, True)
 
-def get_bgn_mapping(file_path: str):
-    if not Path(file_path).is_file():
-        raise FileNotFoundError('Could not find BGN Mapping file at\n\'{}\''.format(file_path))
-    return pd.read_excel(file_path, sheet_name='Mapping', index_col=[0, 1])
+def get_bgn_mapping():
+    file_path =  str(Path(SubProject.Path) / 'BGNMapping.xlsx')
+    if Path(file_path).is_file():
+        return pd.read_excel(file_path, sheet_name='Mapping', index_col=[0, 1])
+    else:
+        return pd.read_excel('BGNMapping.xlsx', sheet_name='Mapping', index_col=[0, 1])
 
 def get_bgn_tags(tag_map: dict):
     # check input requirements
@@ -125,8 +125,8 @@ def get_bgn_tags(tag_map: dict):
     return settings
 
 
-def automatic_config(bgn_config: BGNConfigurator, tags: dict, bgn_map_file: str):
-    bgn_map = get_bgn_mapping(bgn_map_file)
+def automatic_config(bgn_config: BGNConfigurator, tags: dict):
+    bgn_map = get_bgn_mapping()
 
     # Change bgn_scenario
     bgn_software = bgn_config[BGNSettings.Software]
@@ -134,7 +134,7 @@ def automatic_config(bgn_config: BGNConfigurator, tags: dict, bgn_map_file: str)
     try:
         tags['bgn_scenario'] = bgn_map.loc[(bgn_key, bgn_software), tags['use_case']]
     except KeyError:
-        raise Exception('Could not find BGN scenario {!r} in {!r}'.format(bgn_key, bgn_map_file))
+        raise Exception('Could not find BGN scenario {!r} in BGNMapping.xlsx'.format(bgn_key))
 
     # Change number of repeats
     if tags['loops'] < 0:
@@ -154,7 +154,7 @@ def before_bgn_main():
     if bgn_config.has_controller():
         tags = get_bgn_tags(BGNTags)
         if 'use_case' in tags.keys():
-            tags = automatic_config(bgn_config, tags, bgn_map_file)
+            tags = automatic_config(bgn_config, tags)
         bgn_config.set_up_bgn(**tags)
         state = bgn_config.start_bgn()
         if state != 'OK':
@@ -184,5 +184,5 @@ def after_bgn_main():
         # Get Tag stuff for report
         tags = get_bgn_tags(BGNTags)
         if 'use_case' in tags.keys():
-            tags = automatic_config(bgn_config, tags, bgn_map_file)
+            tags = automatic_config(bgn_config, tags)
         add_bgn_info_to_report(bgn_config, tags)

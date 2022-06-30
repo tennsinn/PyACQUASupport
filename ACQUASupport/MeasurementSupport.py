@@ -33,6 +33,7 @@ def before_each_measurement():
         vmh.set_force()
     if not Smd.Cancel and Tags.Exists('BGNScenario'):
         bgnc.set_bgn_setup()
+        bgnc.before_bgn_main()
     # Apply defined action
     if not Smd.Cancel and Tags.Exists('Action'):
         ret = 0
@@ -46,6 +47,8 @@ def before_each_measurement():
 
 # Run after each measurement
 def after_each_measurement():
+    if Tags.Exists('BGNScenario'):
+        bgnc.after_bgn_main()
     if Tags.Exists('Action'):
         act = get_tag_values('Action')
         ret = 0

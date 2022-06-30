@@ -11,5 +11,6 @@ setup(
     url='https://github.com/tennsinn/PyACQUASupport',
     license='GNU General Public License v3.0',
     packages=['ACQUASupport'],
+    package_data={'':['BGNMapping.xlsx']},
     install_requires=['ADBPhoneControl>=0.8.1'],
 )
