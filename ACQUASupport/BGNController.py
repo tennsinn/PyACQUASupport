@@ -67,7 +67,6 @@ def get_bgn_tags(tag_map: dict):
     if Tags.Value(scenario_tag):
         bgn_scenario = Tags.Value(scenario_tag)
         if bgn_scenario.startswith('AUTO:'):
-            save_var('BGNSetup', '3quest', const.evsUserDefined, '', 'BGNSetup for the type of Binaural Background Noise Sim..', Smd.Title, True)
             # Get Use Case
             try:
                 usecase_tag = tag_map['use_case']
@@ -88,7 +87,6 @@ def get_bgn_tags(tag_map: dict):
                 raise Exception('Tag \'{}\' is not optional when using \'AUTO\' mode.'.format(usecase_tag))
             settings['bgn_scenario'] = bgn_scenario
         elif bgn_scenario.startswith('NG:'):
-            save_var('BGNSetup', 'Default', const.evsUserDefined, '', 'BGNSetup for the type of Noise Generator.', Smd.Title, True)
             settings['bgn_scenario'] = bgn_scenario.split(':')[1]
         else:
             settings['bgn_scenario'] = bgn_scenario
