@@ -129,7 +129,4 @@ dmypy.json
 .pyre/
 
 # Imported
-HSL/
-HEAD/
-Refs/
-ACQUAlyzer.py
+site-packages
