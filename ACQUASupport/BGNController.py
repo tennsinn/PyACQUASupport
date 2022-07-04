@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -53,7 +54,7 @@ def get_bgn_mapping():
     if Path(file_path).is_file():
         return pd.read_excel(file_path, sheet_name='Mapping', index_col=[0, 1])
     else:
-        return pd.read_excel('BGNMapping.xlsx', sheet_name='Mapping', index_col=[0, 1])
+        return pd.read_excel(os.path.dirname(__file__)+'\\BGNMapping.xlsx', sheet_name='Mapping', index_col=[0, 1])
 
 def get_bgn_tags(tag_map: dict):
     # check input requirements
