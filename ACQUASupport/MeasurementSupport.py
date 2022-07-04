@@ -10,7 +10,7 @@ import ACQUASupport.BGNController as bgnc
 
 # Run before each measurement
 def before_each_measurement():
-    vms.check_global_var()
+    vms.set_seq_config()
     if 'VoIP' == get_var_value(vms.var_call_net):
         save_var(vms.var_cmw_remo_ctr, False, const.evsUserDefined)
     vmh.init_adb()
