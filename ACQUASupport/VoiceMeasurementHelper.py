@@ -3,7 +3,6 @@ import time
 from ACQUAlyzer import Tags, Variables, HelperFunctions, Smd
 from HSL.HelperTools.AcquaVariables import get_var_value, save_var
 from HSL.HelperTools.SMDTags import get_tag_values
-from HSL.MeasurementHandlings.Delay.SetEquipmentDelays import input_delay_radio_rcv, input_delay_radio_snd
 from HEAD import const
 
 import ADBPhoneControl as adbpc
@@ -146,6 +145,8 @@ def init_cmw():
             Smd.Cancel = True
         else:
             save_var(vms.var_cmw_remo_ctr, CallConfig.cmw_connected, const.evsUserDefined)
+    else:
+        CallConfig.cmw_connected = False
 
 # Get volume range by adb
 def get_volume_range(usecase, bandwidth):
@@ -260,37 +261,37 @@ def reestablish_call():
     release_call()
     if not Smd.Cancel:
         establish_call()
-    if not Smd.Cancel and Tags.Exists('Number'):
-        num = get_tag_values('Number')
-        if CallConfig.cmw_connected:
-            ulink = cmwc.get_delay_net('SND')
-            dlink = cmwc.get_delay_net('RCV')
-        else:
-            dlink = input_delay_radio_rcv()
-            ulink = input_delay_radio_snd()
-        ucbw = CallConfig.usecase+get_bandwidth(False)
-        save_var(f'D_SND_NET_{ucbw}_{num}', ulink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
-        save_var(f'D_RCV_NET_{ucbw}_{num}', dlink, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
+
+def input_delay_radio(direction):
+    delay_value = HelperFunctions.NumberQueryEx(f'Network Simulator Delay in {direction}', '',
+                                                f'Please enter the network simulator\'s delay value in {direction} direction.'
+                                                '\nYou can find out the value via the manufacturer.',
+                                                '', 'ms', 0, 2)
+    if isinstance(delay_value, bool):
+        raise Exception("Script cancelled by user")
+    return delay_value
 
 def check_audio_delay():
+    direction = get_tag_values('Direction')
+    ucbw = CallConfig.usecase+get_bandwidth(False)[0]
+    if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
+        dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
+    else:
+        dnet = False
     if CallConfig.cmw_connected:
-        direction = get_tag_values('Direction')
-        ucbw = CallConfig.usecase+get_bandwidth(False)[0]
-        if Variables.Exists(f'D_{direction}_NET_{ucbw}'):
-            dnet = get_var_value(f'D_{direction}_NET_{ucbw}')
-        else:
-            dnet = False
         dnet_cur = cmwc.get_delay_net(direction)
+        msg = 'Auto read from CMW500 via visa remote control.'
         # If fail to get the net delay, wait 3s and try again
-        if not check_delay_valid(dnet_cur,dnet):
+        if check_delay_valid(dnet_cur,dnet):
             time.sleep(3)
             dnet_cur = cmwc.get_delay_net(direction)
         # Reestablish the call if still fail to get delay or the delay changed too much
-        if not check_delay_valid(dnet_cur,dnet):
+        if check_delay_valid(dnet_cur,dnet):
             reestablish_call()
             time.sleep(3)
             dnet_cur = cmwc.get_delay_net(direction)
-        if not check_delay_valid(dnet_cur,dnet):
+        # Re-signaling if still fail
+        if check_delay_valid(dnet_cur,dnet):
             release_call()
             cmwc.signaling_off()
             time.sleep(5)
@@ -299,8 +300,18 @@ def check_audio_delay():
             establish_call()
             time.sleep(3)
             dnet_cur = cmwc.get_delay_net(direction)
-        if check_delay_valid(dnet_cur,dnet):
-            save_var(f'D_{direction}_NET_{ucbw}', dnet_cur, const.evsMeasured, 'ms', 'Auto read from CMW500 via visa remote control.', Smd.Title, True)
+    elif Tags.Exists('DelayNo'):
+        dnet_cur = input_delay_radio(direction)
+        msg = 'Manually read from CMW500 Audio Delay.'
+    else:
+        dnet_cur = False
+    if not check_delay_valid(dnet_cur,dnet):
+        if Tags.Exists('DelayNo'):
+            num = get_tag_values('DelayNo')
+            ucbw = CallConfig.usecase+get_bandwidth(False)
+            save_var(f'D_{direction}_NET_{ucbw}_{num}', dnet_cur, const.evsMeasured, 'ms', msg, Smd.Title, True)
+        else:
+            save_var(f'D_{direction}_NET_{ucbw}', dnet_cur, const.evsMeasured, 'ms', msg, Smd.Title, True)
             # Auto adjust the EQ delay based on the change of NET delay
             if Variables.Exists(f'D_{direction}_EQ_{ucbw}'):
                 deq = get_var_value(f'D_{direction}_EQ_{ucbw}')
@@ -308,14 +319,14 @@ def check_audio_delay():
                 if deq_cur < 0:
                     raise Exception('Invalid audio delay value!')
                 save_var(f'D_{direction}_EQ_{ucbw}', deq_cur, const.evsMeasured, 'ms', 'Adjusted value based on the change of net delay.', Smd.Title, True)
-        else:
-            raise Exception('Fail to get audio delay, please check the connection!')
+    else:
+        raise Exception('Error in audio delay, please check the connection!')
 
 def check_delay_valid(dnet_cur, dnet=False):
     if not dnet_cur:
-        return False
+        return 1
     if dnet_cur > 800 or dnet_cur < 0:
-        return False
+        return 2
     if dnet and abs(dnet-dnet_cur) > 200:
-        return False
-    return True
+        return 3
+    return 0

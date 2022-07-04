@@ -15,8 +15,12 @@ def before_each_measurement():
         save_var(vms.var_cmw_remo_ctr, False, const.evsUserDefined)
     vmh.init_adb()
     vmh.init_cmw()
-    set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
     if 'VoIP' != get_var_value(vms.var_call_net):
+        # Apply re-establish action
+        if not Smd.Cancel and Tags.Exists('Action'):
+            act = get_tag_values('Action').split(',')
+            if 're-establish' in act:
+                vmh.reestablish_call()
         # Check call alive or establish call
         if not Smd.Cancel:
             vmh.check_call_alive()
@@ -25,6 +29,7 @@ def before_each_measurement():
             vmh.update_call()
         if not Smd.Cancel and Tags.Exists('Direction'):
             vmh.check_audio_delay()
+    set_d_script(tagname_usecase='UseCase', tagname_bandwidth='Bandwidth', tagname_direction='Direction')
     # DUT volume control
     if not Smd.Cancel and Tags.Exists('VolumeCTRL'):
         vmh.set_volume()
@@ -37,9 +42,6 @@ def before_each_measurement():
     # Apply defined action
     if not Smd.Cancel and Tags.Exists('Action'):
         ret = 0
-        act = get_tag_values('Action').split(',')
-        if 're-establish' in act:
-            vmh.reestablish_call()
         if 'charging' in act:
             ret = HelperFunctions.MessageBox('Start charging the phone.', 'Info', 0x41)
         if 2 == ret:
